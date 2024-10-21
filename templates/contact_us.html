@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2>Contact Us</h2>
+        <p>If you have any questions or feedback, please reach out to us at:</p>
+        <p><strong>Email:</strong> your-email@example.com</p>
+        <p>Feel free to email us directly.</p>
+        <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
+    </div>
+{% endblock %}

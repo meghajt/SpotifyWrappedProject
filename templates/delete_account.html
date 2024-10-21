@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Account{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Delete Account</h2>
+    <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger mb-5">Delete My Account</button>
+    </form>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+
+    {% if messages %}
+        <div class="alert alert-success mt-3">
+            {% for message in messages %}
+                <div>{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

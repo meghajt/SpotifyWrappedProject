@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        /* Basic styling for the password rules */
+        .password-rules {
+            color: #666; /* Change color to distinguish from input */
+            font-size: 0.9em; /* Slightly smaller font size */
+            margin-top: 5px; /* Add some space above the rules */
+        }
+        .error {
+            color: red; /* Error messages in red */
+        }
+    </style>
+</head>
+<body>
+    <h2>Register for Spotify Wrapped</h2>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label for="id_username">Username:</label>
+            {{ form.username }}
+        </p>
+        <p>
+            <label for="id_first_name">First Name:</label>
+            {{ form.first_name }}
+        </p>
+        <p>
+            <label for="id_last_name">Last Name:</label>
+            {{ form.last_name }}
+        </p>
+        <p>
+            <label for="id_email">Email:</label>
+            {{ form.email }}
+        </p>
+        <p>
+            <label for="id_password1">Password:</label>
+            {{ form.password1 }}
+            <span class="password-rules">
+                <p>Password must:</p>
+                <ul>
+                    <li>Be at least 8 characters long</li>
+                    <li>Contain at least one uppercase letter</li>
+                    <li>Contain at least one lowercase letter</li>
+                    <li>Contain at least one digit</li>
+                    <li>Contain at least one special character (e.g., @, #, $, etc.)</li>
+                </ul>
+            </span>
+        </p>
+        <p>
+            <label for="id_password2">Confirm Password:</label>
+            {{ form.password2 }}
+        </p>
+        <button type="submit">Register</button>
+        
+        {% if form.errors %}
+            <ul class="error">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </form>
+</body>
+</html>
