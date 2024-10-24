@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.urls import path
 from . import views
+from .views import spotify_callback, spotify_wrapped
 
 def redirect_to_spotifywrapped(request):
     return redirect('/spotifywrapped/')
@@ -14,4 +15,6 @@ urlpatterns = [
     path("delete-account/", views.delete_account, name="delete_account"),
     path("profile/", views.profile, name="profile"),
     path("contact-us/", views.contact_us, name="contact_us"),
+    path('callback/', spotify_callback, name='spotify_callback'),
+    path('spotify_wrapped/', spotify_wrapped, name='spotify_wrapped'),
 ]
