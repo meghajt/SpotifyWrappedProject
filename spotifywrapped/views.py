@@ -122,7 +122,7 @@ def get_spotify_auth_url(request):
     params = {
         "client_id": 'abd09f0a632b49d7a0f08b43fccfad89',
         "response_type": "code",
-        "redirect_uri": 'http://localhost:8000/callback/',  # Updated URI
+        "redirect_uri": 'http://localhost:8000/callback/',  # Ensure this matches
         "scope": "user-top-read user-read-recently-played",
         "show_dialog": True
     }
