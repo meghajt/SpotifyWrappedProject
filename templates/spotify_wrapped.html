@@ -4,66 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Spotify Wrapped</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1DB954; /* Spotify's signature green color */
-            color: white;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 90%;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-        }
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        .track {
-            background-color: #222;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .track img {
-            width: 50px;
-            height: 50px;
-            vertical-align: middle;
-            border-radius: 5px;
-        }
-        .track-info {
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .track-info h3, .track-info p {
-            margin: 0;
-            text-align: left;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Your Spotify Wrapped</h1>
-        <p>Here's a summary of your top tracks:</p>
-        {% if spotify_data.items %}
-            <div>
-                {% for track in spotify_data.items %}
-                    <div class="track">
-                        <img src="{{ track.album.images.0.url }}" alt="{{ track.name }} cover">
-                        <div class="track-info">
-                            <h3>{{ track.name }}</h3>
-                            <p>By {{ track.artists.0.name }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>No data found for your top tracks. Please make sure you have Spotify activity or try again later.</p>
-        {% endif %}
-    </div>
+    <h1>Your Spotify Wrapped</h1>
+    <h2>Top Tracks</h2>
+    {% if top_tracks %}
+        <ul>
+            {% for track in top_tracks %}
+                <li>{{ track.name }} by {{ track.artists.0.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No top tracks found.</p>
+    {% endif %}
+
+    <h2>Top Artists</h2>
+    {% if top_artists %}
+        <ul>
+            {% for artist in top_artists %}
+                <li>{{ artist.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No top artists found.</p>
+    {% endif %}
 </body>
 </html>
