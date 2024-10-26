@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import requests
 from django.http import HttpResponse
+from app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from .models import SpotifyWrap
 
 
@@ -120,7 +121,7 @@ def spotify_wrapped(request):
 def get_spotify_auth_url(request):
     auth_url = "https://accounts.spotify.com/authorize"
     params = {
-        "client_id": 'abd09f0a632b49d7a0f08b43fccfad89',
+        "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
         "redirect_uri": 'http://localhost:8000/callback/',  # Ensure this matches
         "scope": "user-top-read user-read-recently-played",
@@ -151,8 +152,8 @@ def get_access_token(code):
         "grant_type": "authorization_code",
         "code": code,
         "redirect_uri": 'http://localhost:8000/callback/',  # Updated URI
-        "client_id": 'abd09f0a632b49d7a0f08b43fccfad89',
-        "client_secret": 'bef2297c4e674aa59055898fc0d824f4',
+        "client_id": SPOTIFY_CLIENT_ID,
+        "client_secret": SPOTIFY_CLIENT_SECRET,
     }
 
     response = requests.post(token_url, data=payload)
