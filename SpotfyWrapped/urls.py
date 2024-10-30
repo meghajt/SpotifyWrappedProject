@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import path, include
+from spotifywrapped.views import spotify_callback
 
 def redirect_to_spotifywrapped(request):
     return redirect('/spotifywrapped/')
@@ -25,4 +26,6 @@ urlpatterns = [
     path('', include('django.contrib.auth.urls')),
     path('', redirect_to_spotifywrapped, name='root_redirect'),  # Redirect root URL
     path("admin/", admin.site.urls),
+    path('', include('spotifywrapped.urls')),  # Include your app's URLs
+    path('callback/', spotify_callback, name='spotify_callback'),
 ]

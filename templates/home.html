@@ -3,8 +3,67 @@
 {% block title %}Home Page{% endblock %}
 
 {% block content %}
-<h1>Welcome to Your Home Page!</h1>
-<p>Here you can explore all the amazing features of the Spotify Wrapped application.</p>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
-<li><a href="{% url 'spotify_wrapped' %}">View Spotify Wrapped</a></li>
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #555;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #1DB954; /* Spotify green color */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #1aa34a;
+        }
+    </style>
+</head>
+
+<div class="container">
+    <h1>Welcome to Your Home Page!</h1>
+    <p>Here you can explore all the amazing features of the Spotify Wrapped application.</p>
+
+    <ul>
+        <li><a href="{% url 'spotify_wrapped' %}" class="btn">View Spotify Wrapped</a></li>
+    </ul>
+</div>
 {% endblock %}
