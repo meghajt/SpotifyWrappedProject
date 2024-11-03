@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import requests
 from django.http import HttpResponse
-from app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+from .app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from .models import SpotifyWrap
 
 
@@ -79,6 +79,7 @@ def contact_us(request):
     return render(request, 'contact_us.html')
 
 
+
 @login_required
 def spotify_wrapped(request):
     # Get the access token from the session
@@ -112,6 +113,14 @@ def spotify_wrapped(request):
 
     context = {
         'slides': slides,
+    }
+    SpotifyWrap.objects.create(
+        user=request.user,
+        wrap_data={'top_tracks': top_tracks, 'top_artists': top_artists}
+    )
+
+    context = {
+        'slides': generate_wrapped_slides(top_tracks, top_artists),
     }
     return render(request, 'spotify_wrapped.html', context)
 
@@ -221,6 +230,58 @@ def generate_wrapped_slides(top_tracks, top_artists):
     })
 
     return slides
+
+@login_required
+def view_saved_wraps(request):
+    saved_wraps = SpotifyWrap.objects.filter(user=request.user).order_by('-created_at')
+    
+    if not saved_wraps:
+        messages.info(request, "You don't have any saved wraps yet.")
+        return redirect('home')
+    
+    return render(request, 'select_wrap.html', {'saved_wraps': saved_wraps})
+
+@login_required
+def display_selected_wrap(request, wrap_id):
+    try:
+        selected_wrap = SpotifyWrap.objects.get(id=wrap_id, user=request.user)
+    except SpotifyWrap.DoesNotExist:
+        messages.error(request, "The selected wrap does not exist.")
+        return redirect('view_saved_wraps')
+    
+    top_tracks = selected_wrap.wrap_data.get('top_tracks', [])
+    top_artists = selected_wrap.wrap_data.get('top_artists', [])
+    slides = generate_wrapped_slides(top_tracks, top_artists)
+
+    context = {
+        'slides': slides,
+    }
+    return render(request, 'spotify_wrapped.html', context)
+
+
+
+
+@login_required
+def invite_duo_wrapped(request):
+    if request.method == 'POST':
+        invitee_username = request.POST.get('invitee')
+        try:
+            invitee = User.objects.get(username=invitee_username)
+            DuoWrapped.objects.create(inviter=request.user, invitee=invitee)
+            messages.success(request, f"Invitation sent to {invitee_username}.")
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+    return redirect('profile')  # Redirect to a relevant page
+
+@login_required
+def view_duo_wrapped(request, duo_id):
+    duo_wrapped = DuoWrapped.objects.get(id=duo_id, is_accepted=True)
+    context = {
+        'inviter_wrap': SpotifyWrap.objects.filter(user=duo_wrapped.inviter).last(),
+        'invitee_wrap': duo_wrapped.invitee_wrap_data,
+    }
+    return render(request, 'view_duo_wrapped.html', context)
+
 
 def get_spotify_auth_url(request):
     auth_url = "https://accounts.spotify.com/authorize"
