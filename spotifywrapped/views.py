@@ -279,12 +279,24 @@ def invite_duo_wrapped(request):
             if invitee == request.user:
                 messages.error(request, "You cannot invite yourself.")
                 return redirect('profile')
-            
-            # Create the Duo Wrapped invitation if it doesn’t already exist
-            DuoWrapped.objects.get_or_create(inviter=request.user, invitee=invitee)
-            messages.success(request, f"Invitation sent to {invitee_username}.")
+
+            # Check for an existing pending invitation
+            existing_invitation = DuoWrapped.objects.filter(
+                inviter=request.user,
+                invitee=invitee,
+                is_accepted=False
+            ).first()
+
+            if existing_invitation:
+                messages.error(request, f"You already have a pending invitation to {invitee_username}.")
+            else:
+                # Create a new invitation if no pending one exists
+                DuoWrapped.objects.create(inviter=request.user, invitee=invitee)
+                messages.success(request, f"Invitation sent to {invitee_username}.")
+                
         except User.DoesNotExist:
             messages.error(request, "User not found.")
+    
     return redirect('profile')
 
 
