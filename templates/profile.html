@@ -4,10 +4,42 @@
 
 {% block content %}
     <div class="container mt-5">
-        <h2>User Profile</h2>
-        <p><strong>First Name:</strong> {{ first_name }}</p>
-        <p><strong>Last Name:</strong> {{ last_name }}</p>
-        <p><strong>Email:</strong> {{ email }}</p>
-        <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+        <h2 class="mb-4">User Profile</h2>
+        <div class="card shadow-sm p-4 mb-5 bg-white rounded">
+            <p><strong>First Name:</strong> {{ first_name }}</p>
+            <p><strong>Last Name:</strong> {{ last_name }}</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
+        </div>
+
+        <!-- Invite a Friend to Duo Wrapped -->
+        <div class="card shadow-sm p-4 mb-5 bg-light rounded">
+            <h3 class="mb-3">Invite a Friend to Duo Wrapped</h3>
+            <form method="post" action="{% url 'invite_duo_wrapped' %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="invitee" id="invitee" class="form-control" placeholder="Enter friend's username" required>
+                    <button type="submit" class="btn btn-primary">Send Invitation</button>
+                </div>
+                <small class="form-text text-muted mt-2">Invite a friend to view and compare your Spotify Wrapped together!</small>
+            </form>
+        </div>
+
+        <!-- Display Outstanding Invitations -->
+        <div class="card shadow-sm p-4 mb-5 bg-light rounded">
+            <h3 class="mb-3">Outstanding Duo Wrapped Invitations</h3>
+            {% if duo_invitations %}
+                <ul class="list-group">
+                    {% for invite in duo_invitations %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Invitation from <strong>{{ invite.inviter.username }}</strong></span>
+                            <a href="{% url 'accept_duo_invitation' invite.id %}" class="btn btn-success btn-sm">Accept</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No outstanding invitations.</p>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}

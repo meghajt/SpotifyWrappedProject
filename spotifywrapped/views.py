@@ -1,6 +1,7 @@
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 from spotifywrapped.forms import CustomUserCreationForm
 from django.views.decorators.cache import cache_control
 from django.shortcuts import render, redirect
@@ -9,7 +10,8 @@ from django.contrib import messages
 import requests
 from django.http import HttpResponse
 from .app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
-from .models import SpotifyWrap
+from .models import SpotifyWrap, DuoWrapped
+from django.shortcuts import get_object_or_404
 
 
 def register(request):
@@ -66,10 +68,14 @@ def delete_account(request):
 @login_required
 def profile(request):
     user = request.user
+    # Fetch outstanding Duo Wrapped invitations
+    duo_invitations = DuoWrapped.objects.filter(invitee=user, is_accepted=False)
+    
     context = {
         'first_name': user.first_name,
         'last_name': user.last_name,
         'email': user.email,
+        'duo_invitations': duo_invitations
     }
     return render(request, 'profile.html', context)
 
@@ -263,25 +269,67 @@ def display_selected_wrap(request, wrap_id):
 
 @login_required
 def invite_duo_wrapped(request):
+    """Invite a friend to join a Duo Wrapped."""
     if request.method == 'POST':
         invitee_username = request.POST.get('invitee')
         try:
             invitee = User.objects.get(username=invitee_username)
-            DuoWrapped.objects.create(inviter=request.user, invitee=invitee)
+            
+            # Ensure inviter is not inviting themselves
+            if invitee == request.user:
+                messages.error(request, "You cannot invite yourself.")
+                return redirect('profile')
+            
+            # Create the Duo Wrapped invitation if it doesn’t already exist
+            DuoWrapped.objects.get_or_create(inviter=request.user, invitee=invitee)
             messages.success(request, f"Invitation sent to {invitee_username}.")
         except User.DoesNotExist:
             messages.error(request, "User not found.")
-    return redirect('profile')  # Redirect to a relevant page
+    return redirect('profile')
+
+
+@login_required
+def accept_duo_invitation(request, duo_id):
+    """Accept a Duo Wrapped invitation and save the invitee's wrap data."""
+    duo_invitation = get_object_or_404(DuoWrapped, id=duo_id, invitee=request.user, is_accepted=False)
+
+    # Fetch the invitee's latest wrap data and save it to the invitation
+    latest_wrap = SpotifyWrap.objects.filter(user=request.user).order_by('-created_at').first()
+    if latest_wrap:
+        duo_invitation.invitee_wrap_data = latest_wrap.wrap_data
+        duo_invitation.is_accepted = True
+        duo_invitation.save()
+        messages.success(request, "You have accepted the Duo Wrapped invitation.")
+
+        # Redirect to the Duo Wrapped view page to generate the slides
+        return redirect('view_duo_wrapped', duo_id=duo_invitation.id)
+    else:
+        messages.error(request, "No wrap data found to share in Duo Wrapped.")
+    
+    return redirect('home')
+
 
 @login_required
 def view_duo_wrapped(request, duo_id):
-    duo_wrapped = DuoWrapped.objects.get(id=duo_id, is_accepted=True)
-    context = {
-        'inviter_wrap': SpotifyWrap.objects.filter(user=duo_wrapped.inviter).last(),
-        'invitee_wrap': duo_wrapped.invitee_wrap_data,
-    }
-    return render(request, 'view_duo_wrapped.html', context)
+    """Display the combined Duo Wrapped slides for both inviter and invitee."""
+    duo_wrapped = get_object_or_404(DuoWrapped, id=duo_id, is_accepted=True)
 
+    inviter_wrap = SpotifyWrap.objects.filter(user=duo_wrapped.inviter).last()
+    invitee_wrap_data = duo_wrapped.invitee_wrap_data
+
+    if inviter_wrap and invitee_wrap_data:
+        # Generate slides for both inviter and invitee's data
+        inviter_slides = generate_wrapped_slides(inviter_wrap.wrap_data.get('top_tracks', []), inviter_wrap.wrap_data.get('top_artists', []))
+        invitee_slides = generate_wrapped_slides(invitee_wrap_data.get('top_tracks', []), invitee_wrap_data.get('top_artists', []))
+
+        context = {
+            'inviter_slides': inviter_slides,
+            'invitee_slides': invitee_slides,
+        }
+        return render(request, 'duo_wrapped.html', context)
+    else:
+        messages.error(request, "Wrap data is missing for one or both users.")
+        return redirect('home')
 
 def get_spotify_auth_url(request):
     auth_url = "https://accounts.spotify.com/authorize"
