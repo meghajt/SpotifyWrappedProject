@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Account{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg" style="border-radius: 12px; background-color: #2d2d2d; color: white;">
+        <h2 class="text-center mb-4" style="font-weight: bold;">Delete Account</h2>
+        <p class="text-center mb-4" style="font-size: 1.1rem;">Are you sure you want to delete your account? This action cannot be undone.</p>
+        
+        <form method="post" class="text-center">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-lg px-4 py-2">Delete My Account</button>
+        </form>
+        
+        <div class="mt-3 text-center">
+            <a href="{% url 'home' %}" class="btn btn-secondary btn-lg px-4 py-2">Back to Home</a>
+        </div>
+        
+        {% if messages %}
+            <div class="alert alert-success mt-4">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+<style>
+    /* Custom Styles for the Delete Account page */
+    .container {
+        max-width: 600px;
+    }
+
+    .card {
+        background-color: #2d2d2d;
+        color: white;
+        border-radius: 15px;
+        padding: 3rem;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+        font-weight: 700;
+        font-size: 2rem;
+        color: #ffffff;
+    }
+
+    p {
+        font-size: 1.1rem;
+        color: #bdbdbd;
+    }
+
+    .btn {
+        width: 100%;
+        border-radius: 50px;
+        font-size: 1.2rem;
+    }
+
+    .btn-danger {
+        background-color: #e74c3c;
+        border: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+    }
+
+    .btn-secondary {
+        background-color: #555;
+        color: white;
+        border: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-secondary:hover {
+        background-color: #444;
+    }
+
+    .alert {
+        background-color: #27ae60;
+        color: white;
+        font-weight: bold;
+    }
+
+    .alert div {
+        margin-bottom: 10px;
+    }
+</style>
