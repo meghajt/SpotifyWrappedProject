@@ -3,11 +3,74 @@
 {% block title %}Contact Us{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h2>Contact Us</h2>
-        <p>If you have any questions or feedback, please reach out to us at:</p>
-        <p><strong>Email:</strong> your-email@example.com</p>
-        <p>Feel free to email us directly.</p>
-        <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg" style="border-radius: 15px; background-color: #2d2d2d; color: white;">
+        <h2 class="text-center mb-4" style="font-weight: bold; font-size: 2rem;">Contact Us</h2>
+        <p class="text-center mb-4" style="font-size: 1.1rem; color: #bdbdbd;">If you have any questions or feedback, please reach out to us at:</p>
+        
+        <div class="contact-info text-center mb-4">
+            <p style="font-size: 1.2rem;"><strong>Email:</strong> <a href="mailto:your-email@example.com" style="color: #1db954; text-decoration: none;">your-email@example.com</a></p>
+            <p style="font-size: 1.1rem; color: #bdbdbd;">Feel free to email us directly for inquiries or support.</p>
+        </div>
+        
+        <div class="text-center">
+            <a href="{% url 'home' %}" class="btn btn-secondary btn-lg px-4 py-2">Back to Home</a>
+        </div>
     </div>
+</div>
 {% endblock %}
+
+<style>
+    /* Custom Styles for Contact Us page */
+    .container {
+        max-width: 600px;
+    }
+
+    .card {
+        background-color: #2d2d2d;
+        color: white;
+        border-radius: 15px;
+        padding: 3rem;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        color: #ffffff;
+    }
+
+    p {
+        font-size: 1.1rem;
+        color: #bdbdbd;
+    }
+
+    .contact-info a {
+        color: #1db954;
+        font-weight: bold;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .contact-info a:hover {
+        color: #ffffff;
+    }
+
+    .btn {
+        width: 100%;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        padding: 1rem;
+    }
+
+    .btn-secondary {
+        background-color: #555;
+        color: white;
+        border: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-secondary:hover {
+        background-color: #444;
+    }
+</style>

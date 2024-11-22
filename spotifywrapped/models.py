@@ -3,6 +3,8 @@ from django.db import models
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
+
 
 class SpotifyWrap(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -11,6 +13,9 @@ class SpotifyWrap(models.Model):
 
     def __str__(self):
         return f"Spotify Wrap for {self.user.username} on {self.created_at.strftime('%Y-%m-%d')}"
+
+    def get_absolute_url(self):
+        return reverse('display_selected_wrap', args=[self.id])
     
 class DuoWrapped(models.Model):
     inviter = models.ForeignKey(User, related_name='duo_invitations_sent', on_delete=models.CASCADE)

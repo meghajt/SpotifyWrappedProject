@@ -5,13 +5,55 @@
 {% block content %}
 <div class="container">
     <h1>Select a Saved Wrap</h1>
-    <p>Choose a wrap to view based on the date it was saved:</p>
+    <p>Choose a wrap to view or share based on the date it was saved:</p>
     <ul class="list-group">
         {% for wrap in saved_wraps %}
             <li class="list-group-item">
+                <!-- Link to view the wrap -->
                 <a href="{% url 'display_selected_wrap' wrap.id %}">
                     {{ wrap.created_at|date:"F j, Y, g:i a" }}
                 </a>
+
+                <!-- Buttons Section -->
+                <div class="mt-2">
+                    <!-- Share Buttons -->
+                    <div class="share-buttons mt-2 mb-2 d-flex">
+                        <!-- Twitter Share -->
+                        <a 
+                            href="https://twitter.com/intent/tweet?url={% url 'generate_wrap_image' wrap.id %}|urlencode %}&text=Check%20out%20my%20Spotify%20Wrapped%20for%20{{ wrap.created_at|date:'F%20j,%20Y' }}"
+                            target="_blank" 
+                            class="btn btn-outline-primary btn-sm" 
+                            style="margin-right: 8px;">
+                            Share on Twitter
+                        </a>
+
+                        <!-- LinkedIn Share -->
+                        <a 
+                            href="https://www.linkedin.com/shareArticle?mini=true&url={% url 'generate_wrap_image' wrap.id %}|urlencode %}&title=Spotify%20Wrapped&summary=Check%20out%20my%20Spotify%20Wrapped%20from%20{{ wrap.created_at|date:'F%20j,%20Y' }}"
+                            target="_blank" 
+                            class="btn btn-outline-info btn-sm" 
+                            style="margin-right: 8px;">
+                            Share on LinkedIn
+                        </a>
+
+                        <!-- Instagram Share (via Download) -->
+                        <a 
+                            href="{% url 'generate_wrap_image' wrap.id %}"
+                            target="_blank" 
+                            class="btn btn-outline-danger btn-sm" 
+                            style="margin-right: 8px;">
+                            Share on Instagram (via Download)
+                        </a>
+
+                        <!-- Download Button -->
+                        <a 
+                            href="{% url 'generate_wrap_image' wrap.id %}"
+                            download="spotify_wrap_{{ wrap.created_at|date:'Y-m-d' }}.png"
+                            class="btn btn-outline-success btn-sm">
+                            Download Image
+                        </a>
+                    </div>
+                </div>
             </li>
         {% endfor %}
     </ul>

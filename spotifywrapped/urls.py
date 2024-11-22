@@ -20,4 +20,6 @@ urlpatterns = [
     path('invite-duo-wrapped/', invite_duo_wrapped, name='invite_duo_wrapped'),
     path('accept-duo-invitation/<int:duo_id>/', accept_duo_invitation, name='accept_duo_invitation'),
     path('duo-wrapped/<int:duo_id>/', view_duo_wrapped, name='view_duo_wrapped'),
+    path('wrap/download/<int:wrap_id>/', views.generate_wrap_image, name='generate_wrap_image'),
+
 ]

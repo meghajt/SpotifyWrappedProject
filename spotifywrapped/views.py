@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import requests
 from django.http import HttpResponse
-from .app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+from app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from .models import SpotifyWrap, DuoWrapped
 from django.shortcuts import get_object_or_404
 
@@ -386,3 +386,116 @@ def get_access_token(code):
         return response.json().get("access_token")
     else:
         return None
+
+
+
+from django.http import HttpResponse, Http404
+from PIL import Image, ImageDraw, ImageFont
+import io
+from .models import SpotifyWrap
+
+def generate_wrap_image(request, wrap_id):
+    try:
+        # Retrieve the wrap from the database
+        wrap = SpotifyWrap.objects.get(id=wrap_id)
+    except SpotifyWrap.DoesNotExist:
+        raise Http404("Spotify wrap not found.")
+
+    # Get the wrap data (top_tracks and top_artists) from the wrap instance
+    wrap_data = wrap.wrap_data
+    top_tracks = wrap_data.get('top_tracks', [])
+    top_artists = wrap_data.get('top_artists', [])
+    top_genres = wrap_data.get('top_genres', [])
+    most_played_track = wrap_data.get('most_played_track', {})
+    most_played_artist = wrap_data.get('most_played_artist', {})
+    fun_fact = wrap_data.get('fun_fact', "You explored over 20 different genres this year!")
+
+    # Generate the image dynamically based on this data
+    img = Image.new('RGB', (800, 800), color=(255, 255, 255))  # Increased size for more text
+    draw = ImageDraw.Draw(img)
+
+    # Define a font (use default font if custom font is not found)
+    try:
+        fnt = ImageFont.truetype('/path/to/font.ttf', 40)  # Update with a valid font path
+    except IOError:
+        fnt = ImageFont.load_default()  # Fallback to default font
+
+    # Add text to the image (e.g., wrap user, wrap date, top tracks, and top artists)
+    draw.text((10, 10), f"Spotify Wrapped for {wrap.user.username}", font=fnt, fill=(0, 0, 0))
+    draw.text((10, 60), f"Wrap Date: {wrap.created_at.strftime('%B %d, %Y')}", font=fnt, fill=(0, 0, 0))
+
+    # Add top tracks to the image
+    track_y_position = 120
+    draw.text((10, track_y_position), "Top Tracks:", font=fnt, fill=(0, 0, 0))
+    track_y_position += 50
+    for track in top_tracks[:5]:  # Show top 5 tracks
+        draw.text((10, track_y_position), track['name'], font=fnt, fill=(0, 0, 0))
+        track_y_position += 40
+
+    # Add top artists to the image
+    artist_y_position = track_y_position + 20
+    draw.text((10, artist_y_position), "Top Artists:", font=fnt, fill=(0, 0, 0))
+    artist_y_position += 50
+    for artist in top_artists[:5]:  # Show top 5 artists
+        draw.text((10, artist_y_position), artist['name'], font=fnt, fill=(0, 0, 0))
+        artist_y_position += 40
+
+    # Add top genres to the image
+    genre_y_position = artist_y_position + 20
+    draw.text((10, genre_y_position), "Favorite Genres:", font=fnt, fill=(0, 0, 0))
+    genre_y_position += 50
+    for genre in top_genres[:5]:  # Show top 5 genres
+        draw.text((10, genre_y_position), genre, font=fnt, fill=(0, 0, 0))
+        genre_y_position += 40
+
+    # Initialize position variables for the most played track and artist
+    track_details_y_position = genre_y_position + 20
+    artist_details_y_position = track_details_y_position + 50
+
+    # Add most played track and artist
+    if most_played_track:
+        draw.text((10, track_details_y_position), "Most Played Track:", font=fnt, fill=(0, 0, 0))
+        track_details_y_position += 50
+        draw.text((10, track_details_y_position), f"{most_played_track['name']} by {', '.join([artist['name'] for artist in most_played_track['artists']])}", font=fnt, fill=(0, 0, 0))
+        track_details_y_position += 50
+
+    if most_played_artist:
+        draw.text((10, artist_details_y_position), "Most Played Artist:", font=fnt, fill=(0, 0, 0))
+        artist_details_y_position += 50
+        draw.text((10, artist_details_y_position), most_played_artist['name'], font=fnt, fill=(0, 0, 0))
+        artist_details_y_position += 50
+
+    # Add fun fact to the image
+    fun_fact_y_position = artist_details_y_position + 20
+    draw.text((10, fun_fact_y_position), "Fun Fact:", font=fnt, fill=(0, 0, 0))
+    fun_fact_y_position += 50
+    draw.text((10, fun_fact_y_position), fun_fact, font=fnt, fill=(0, 0, 0))
+
+    # Save the image to an in-memory stream
+    image_stream = io.BytesIO()
+    img.save(image_stream, format='PNG')
+    image_stream.seek(0)  # Rewind the stream to the beginning
+
+    # Create a downloadable response
+    response = HttpResponse(image_stream, content_type='image/png')
+    response['Content-Disposition'] = f'attachment; filename="spotify_wrap_{wrap_id}.png"'
+
+    return response
+
+
+
+
+
+
+# views.py
+from .models import SpotifyWrap
+from django.http import Http404
+
+def get_wrap_from_id(wrap_id):
+    try:
+        # Retrieve the wrap from the database using the provided ID
+        wrap = SpotifyWrap.objects.get(id=wrap_id)
+        return wrap
+    except SpotifyWrap.DoesNotExist:
+        # If no wrap is found with the given ID, raise a 404 error
+        raise Http404("Wrap not found")
