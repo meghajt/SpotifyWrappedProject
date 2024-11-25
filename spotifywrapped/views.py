@@ -482,12 +482,6 @@ def generate_wrap_image(request, wrap_id):
 
     return response
 
-
-
-
-
-
-# views.py
 from .models import SpotifyWrap
 from django.http import Http404
 

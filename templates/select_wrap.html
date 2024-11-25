@@ -18,31 +18,31 @@
                 <div class="mt-2">
                     <!-- Share Buttons -->
                     <div class="share-buttons mt-2 mb-2 d-flex">
-                        <!-- Twitter Share -->
+                        <!-- Twitter Post -->
                         <a 
-                            href="https://twitter.com/intent/tweet?url={% url 'generate_wrap_image' wrap.id %}|urlencode %}&text=Check%20out%20my%20Spotify%20Wrapped%20for%20{{ wrap.created_at|date:'F%20j,%20Y' }}"
+                            href="https://twitter.com/intent/tweet?text=Check%20out%20my%20Spotify%20Wrapped%20for%20{{ wrap.created_at|date:'F%20j,%20Y' }}!&hashtags=SpotifyWrapped"
                             target="_blank" 
                             class="btn btn-outline-primary btn-sm" 
                             style="margin-right: 8px;">
                             Share on Twitter
                         </a>
 
-                        <!-- LinkedIn Share -->
+                        <!-- LinkedIn Post -->
                         <a 
-                            href="https://www.linkedin.com/shareArticle?mini=true&url={% url 'generate_wrap_image' wrap.id %}|urlencode %}&title=Spotify%20Wrapped&summary=Check%20out%20my%20Spotify%20Wrapped%20from%20{{ wrap.created_at|date:'F%20j,%20Y' }}"
+                            href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title=Spotify%20Wrapped&summary=Check%20out%20my%20Spotify%20Wrapped%20from%20{{ wrap.created_at|date:'F%20j,%20Y' }}"
                             target="_blank" 
                             class="btn btn-outline-info btn-sm" 
                             style="margin-right: 8px;">
                             Share on LinkedIn
                         </a>
 
-                        <!-- Instagram Share (via Download) -->
+                        <!-- Instagram Instructions -->
                         <a 
                             href="{% url 'generate_wrap_image' wrap.id %}"
-                            target="_blank" 
+                            download="spotify_wrap_{{ wrap.created_at|date:'Y-m-d' }}.png"
                             class="btn btn-outline-danger btn-sm" 
                             style="margin-right: 8px;">
-                            Share on Instagram (via Download)
+                            Share on Instagram (Download Required)
                         </a>
 
                         <!-- Download Button -->
