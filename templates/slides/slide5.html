@@ -1,6 +1,10 @@
 <div class="slide" style="background: linear-gradient(135deg, #fc466b, #3f5efb);">
     <div class="shape" style="background-image: url('/static/shapes/spiky.png');"></div>
     <h1>Your Most Played Track</h1>
-    <p>{{ slide.description }}</p>
-    <img src="{{ slide.image }}" alt="Most Played Track Album Cover">
+    {% if slide.description and slide.image %}
+        <p>{{ slide.description }}</p>
+        <img src="{{ slide.image }}" alt="Most Played Track Album Cover">
+    {% else %}
+        <p>No data available for your most played track.</p>
+    {% endif %}
 </div>

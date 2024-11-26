@@ -79,14 +79,9 @@
 <body>
     <!-- Slide container -->
     <div id="slides-container">
-        {% include 'slides/slide1.html' %}
-        {% include 'slides/slide2.html' %}
-        {% include 'slides/slide3.html' %}
-        {% include 'slides/slide4.html' %}
-        {% include 'slides/slide5.html' %}
-        {% include 'slides/slide6.html' %}
-        {% include 'slides/slide7.html' %}
-        {% include 'slides/slide8.html' %}
+        {% for slide in slides %}
+            {% include slide.template with slide=slide %}
+        {% endfor %}
     </div>
 
     <!-- Navigation Buttons -->

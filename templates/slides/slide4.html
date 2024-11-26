@@ -1,9 +1,13 @@
 <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59);">
     <div class="shape" style="background-image: url('/static/shapes/circle.png');"></div>
     <h1>Your Favorite Genres</h1>
-    <ul>
-        {% for genre in slide.items %}
-        <li>{{ genre }}</li>
-        {% endfor %}
-    </ul>
+    {% if slide.items %}
+        <ul>
+            {% for genre in slide.items %}
+            <li>{{ genre }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No data available for your favorite genres.</p>
+    {% endif %}
 </div>

@@ -1,10 +1,14 @@
 <div class="slide" style="background: linear-gradient(135deg, #36d1dc, #5b86e5);">
     <div class="shape" style="background-image: url('/static/shapes/burst.png');"></div>
     <h1>Your Top 10 Artists</h1>
-    <img src="{{ slide.image }}" alt="Top Artist Image">
-    <ul>
-        {% for artist in slide.items %}
-        <li>{{ artist }}</li>
-        {% endfor %}
-    </ul>
+    {% if slide.items %}
+        <img src="{{ slide.image }}" alt="Top Artist Image">
+        <ul>
+            {% for artist in slide.items %}
+            <li>{{ artist.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No data available for your top artists.</p>
+    {% endif %}
 </div>

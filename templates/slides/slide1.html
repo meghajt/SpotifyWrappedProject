@@ -1,11 +1,9 @@
-<div class="slide" style="background: radial-gradient(circle, rgba(0, 0, 0, 1) 50%, #1DB954 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100vh; padding: 20px; box-sizing: border-box;">
-    
-    <!-- Responsive Image -->
+<div class="slide" style="background: radial-gradient(circle, rgba(0, 0, 0, 1) 50%, #1DB954 100%); 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    text-align: center; height: 100vh; padding: 20px; box-sizing: border-box;">
     {% load static %}
-    <img src="{% static 'spotify.png' %}" 
-         alt="Spotify Wrapped Image" 
+    <img src="{% static 'spotify.png' %}"
+         alt="Spotify Wrapped Image"
          style="max-width: 30%; height: auto; margin-bottom: 20px; border-radius: 10px;">
-    
-    <!-- Responsive Text -->
-    <h1 style="color: #ffffff; font-size: calc(2vw + 1em); margin-top: 20px;">Your Spotify Wrapped!</h1>
+    <h1 style="color: #ffffff; font-size: calc(2vw + 1em); margin-top: 20px;">{{ slide.title }}</h1>
 </div>

@@ -1,0 +1,9 @@
+<div class="slide" style="background: linear-gradient(135deg, #d4fc79, #96e6a1);">
+    <div class="shape" style="background-image: url('/static/shapes/burst.png');"></div>
+    <h1>That's a Wrap!</h1>
+    {% if slide.description %}
+        <p>{{ slide.description }}</p>
+    {% else %}
+        <p>Thanks for listening to Spotify this year!</p>
+    {% endif %}
+</div>

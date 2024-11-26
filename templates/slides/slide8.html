@@ -1,5 +1,19 @@
-<div class="slide" style="background: linear-gradient(135deg, #d4fc79, #96e6a1);">
-    <div class="shape" style="background-image: url('/static/shapes/burst.png');"></div>
-    <h1>That's a Wrap!</h1>
-    <p>{{ slide.description }}</p>
+<div class="slide" style="background: linear-gradient(135deg, #2af598, #009efd);">
+    <div class="shape" style="background-image: url('/static/shapes/gamepad.png');"></div>
+    <h1>Spotify Game Time!</h1>
+    <p>Test your knowledge of your listening habits this year!</p>
+    {% if slide.options %}
+        <div style="text-align: center; margin-top: 20px;">
+            {% for option in slide.options %}
+            <button style="margin: 5px; padding: 10px 20px; background: #1DB954; border: none; border-radius: 5px; color: #fff; cursor: pointer;">
+                {{ option }}
+            </button>
+            {% endfor %}
+        </div>
+        <div style="margin-top: 20px; color: #fff;">
+            <p>Stay tuned for the answer on the next slide!</p>
+        </div>
+    {% else %}
+        <p>No game options available. Enjoy the rest of your Wrapped!</p>
+    {% endif %}
 </div>

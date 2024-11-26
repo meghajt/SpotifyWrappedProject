@@ -91,31 +91,107 @@ def spotify_wrapped(request):
     # Get the access token from the session
     access_token = request.session.get('spotify_access_token')
 
-    # If no access token, redirect to Spotify authorization
     if not access_token:
         messages.error(request, "Spotify access token is missing. Please reconnect.")
         return redirect('get_spotify_auth_url')
 
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
+    user_first_name = request.user.first_name
+    headers = {"Authorization": f"Bearer {access_token}"}
 
-    # Fetch user's top tracks and artists
+    # Listening Habits: Fetch recently played tracks
+    listening_habits = {"total_minutes": 0, "peak_time": "unknown"}
+    recent_tracks_url = "https://api.spotify.com/v1/me/player/recently-played"
+    recent_tracks_response = requests.get(recent_tracks_url, headers=headers, params={"limit": 50})
+
+    if recent_tracks_response.status_code == 200:
+        recent_tracks_data = recent_tracks_response.json()
+        if "items" in recent_tracks_data:
+            from collections import Counter
+            from datetime import datetime
+
+            # Calculate total minutes listened
+            listening_habits["total_minutes"] = sum(
+                item['track']['duration_ms'] for item in recent_tracks_data['items']
+            ) // (1000 * 60)
+
+            # Calculate peak times
+            played_times = [
+                datetime.fromisoformat(item['played_at'].replace("Z", "+00:00")).hour
+                for item in recent_tracks_data['items']
+            ]
+            peak_time_hour = Counter(played_times).most_common(1)[0][0]
+            if 6 <= peak_time_hour < 12:
+                listening_habits["peak_time"] = "morning"
+            elif 12 <= peak_time_hour < 18:
+                listening_habits["peak_time"] = "afternoon"
+            else:
+                listening_habits["peak_time"] = "evening"
+
+    # Top Tracks: Fetch user's top 10 tracks
+    top_tracks = []
     top_tracks_url = "https://api.spotify.com/v1/me/top/tracks"
+    top_tracks_response = requests.get(top_tracks_url, headers=headers, params={"limit": 10, "time_range": "medium_term"})
+
+    if top_tracks_response.status_code == 200:
+        top_tracks_data = top_tracks_response.json()
+        top_tracks = top_tracks_data.get('items', [])
+
+    # Top Artists: Fetch user's top 10 artists
+    top_artists = []
     top_artists_url = "https://api.spotify.com/v1/me/top/artists"
-    params = {"limit": 10, "time_range": "medium_term"}
-    response_tracks = requests.get(top_tracks_url, headers=headers, params=params)
-    response_artists = requests.get(top_artists_url, headers=headers, params=params)
+    top_artists_response = requests.get(top_artists_url, headers=headers, params={"limit": 10, "time_range": "medium_term"})
 
-    if response_tracks.status_code == 200 and response_artists.status_code == 200:
-        top_tracks = response_tracks.json().get('items', [])
-        top_artists = response_artists.json().get('items', [])
-    else:
-        messages.error(request, "Failed to retrieve Spotify data. Please try again.")
-        return redirect('home')
+    if top_artists_response.status_code == 200:
+        top_artists_data = top_artists_response.json()
+        top_artists = top_artists_data.get('items', [])
 
-    # Generate slide data
-    slides = generate_wrapped_slides(top_tracks, top_artists)
+    # Top Genres: Extract from top artists
+    top_genres = []
+    if top_artists:
+        genres = [genre for artist in top_artists for genre in artist.get('genres', [])]
+        from collections import Counter
+
+        genre_counts = Counter(genres)
+        top_genres = [genre for genre, _ in genre_counts.most_common(5)]
+
+    # Playlist Highlights: Fetch user's playlists
+    top_playlist = {"name": "unknown", "cover_art": None, "top_songs": []}
+    playlists_url = "https://api.spotify.com/v1/me/playlists"
+    playlists_response = requests.get(playlists_url, headers=headers, params={"limit": 10})
+
+    if playlists_response.status_code == 200:
+        playlists_data = playlists_response.json()
+        if playlists_data.get('items'):
+            # Pick the first playlist as the favorite (you can refine this logic)
+            playlist = playlists_data['items'][0]
+            top_playlist = {
+                "name": playlist['name'],
+                "cover_art": playlist['images'][0]['url'] if playlist['images'] else None,
+                "top_songs": []  # Placeholder: Add logic to fetch songs if needed
+            }
+
+    # Discovery Stats: Compare recent tracks and top tracks
+    discovery_stats = {"new_artists": 0, "new_songs": 0, "most_listened_song": "unknown"}
+    if recent_tracks_response.status_code == 200 and top_tracks_response.status_code == 200:
+        recent_artists = {item['track']['artists'][0]['id'] for item in recent_tracks_data['items']}
+        top_track_artists = {track['artists'][0]['id'] for track in top_tracks}
+
+        new_artists = recent_artists - top_track_artists
+        discovery_stats = {
+            "new_artists": len(new_artists),
+            "new_songs": len(top_tracks),
+            "most_listened_song": top_tracks[0]['name'] if top_tracks else "unknown"
+        }
+
+    # Generate slides
+    slides = generate_wrapped_slides(
+        top_tracks,
+        top_artists,
+        user_first_name,
+        listening_stats=listening_habits,
+        top_playlist=top_playlist,
+        discovery_stats=discovery_stats
+    )
 
     # Save wrap data to the database
     SpotifyWrap.objects.create(
@@ -127,93 +203,90 @@ def spotify_wrapped(request):
     return render(request, 'base_slides.html', {'slides': slides})
 
 
-def generate_wrapped_slides(top_tracks, top_artists):
+
+def generate_wrapped_slides(top_tracks, top_artists, first_name, listening_stats=None, top_playlist=None, discovery_stats=None):
     slides = []
 
     # Slide 1: Intro
     slides.append({
-        'title': "Your Spotify Wrapped!",
-        'background': 'radial-gradient(circle, rgba(0, 0, 0, 1) 60%, #1DB954 100%)',  # Gradient from black to green
-        'image': 'https://www.freepnglogos.com/uploads/spotify-logo-png/spotify-icon-black-17.png',
-        'description': "Discover your favorite music trends from this year!",
+        'title': f"Welcome to your Spotify Wrapped, {first_name}!",
         'template': 'slides/slide1.html'
     })
 
-    # Slide 2: Top 10 Tracks
+    # Slide 2: Listening Habits
+    if listening_stats:
+        slides.append({
+            'title': "Your Listening Habits",
+            'description': (
+                f"You've listened for a total of {listening_stats['total_minutes']} minutes this year. "
+                f"Your peak listening times are in the {listening_stats['peak_time']}."
+            ),
+            'template': 'slides/slide2.html'
+        })
+
+    # Slide 3: Top 10 Tracks
     top_track_names = [track['name'] for track in top_tracks]
     top_track_images = [track['album']['images'][0]['url'] for track in top_tracks] if top_tracks else []
     slides.append({
         'title': "Your Top 10 Tracks",
-        'background': 'linear-gradient(135deg, #ff9a9e, #fecfef)',
-        'shape': top_track_images[0] if top_track_images else '',  # Use the album cover of the top track as the shape
-        'image': top_track_images[0] if top_track_images else '',  # Use the album cover of the top track
         'items': top_track_names,
-        'template': 'slides/slide2.html'
+        'image': top_track_images[0] if top_track_images else '',  # Use the album cover of the top track
+        'template': 'slides/slide3.html'
     })
 
-    # Slide 3: Top 10 Artists
+    # Slide 4: Top 10 Artists
     top_artist_names = [artist['name'] for artist in top_artists]
     top_artist_images = [artist['images'][0]['url'] for artist in top_artists if artist['images']] if top_artists else []
     slides.append({
         'title': "Your Top 10 Artists",
-        'background': 'linear-gradient(135deg, #36d1dc, #5b86e5)',
-        'shape': top_artist_images[0] if top_artist_images else '',  # Use the image of the top artist as the shape
-        'image': top_artist_images[0] if top_artist_images else '',  # Use the image of the top artist
         'items': top_artist_names,
-        'template': 'slides/slide3.html'
+        'image': top_artist_images[0] if top_artist_images else '',  # Use the image of the top artist
+        'template': 'slides/slide4.html'
     })
 
-    # Slide 4: Favorite Genres
+    # Slide 5: Top 5 Genres
     genres = [genre for artist in top_artists for genre in artist['genres']]
     genre_counts = {genre: genres.count(genre) for genre in set(genres)}
     sorted_genres = sorted(genre_counts, key=genre_counts.get, reverse=True)[:5]
     slides.append({
-        'title': "Your Favorite Genres",
-        'background': 'linear-gradient(135deg, #c471ed, #f64f59)',
-        'shape': 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png',  # Example genre icon
+        'title': "Your Top 5 Genres",
         'items': sorted_genres,
-        'template': 'slides/slide4.html'
+        'template': 'slides/slide5.html'
     })
 
-    # Slide 5: Most Played Track
-    if top_tracks:
+    # Slide 6: Playlist Highlights
+    if top_playlist:
         slides.append({
-            'title': "Your Most Played Track",
-            'background': 'linear-gradient(135deg, #fc466b, #3f5efb)',
-            'shape': top_tracks[0]['album']['images'][0]['url'] if top_tracks[0]['album']['images'] else '',
-            'description': f"{top_tracks[0]['name']} by {', '.join([artist['name'] for artist in top_tracks[0]['artists']])}",
-            'image': top_tracks[0]['album']['images'][0]['url'] if top_tracks[0]['album']['images'] else '',
-            'template': 'slides/slide5.html'
-        })
-
-    # Slide 6: Most Played Artist
-    if top_artists:
-        slides.append({
-            'title': "Your Most Played Artist",
-            'background': 'linear-gradient(135deg, #ffafbd, #ffc3a0)',
-            'shape': top_artist_images[0] if top_artist_images else '',
-            'description': f"{top_artists[0]['name']}",
-            'image': top_artist_images[0] if top_artist_images else '',
+            'title': f"Your Favorite Playlist: {top_playlist['name']}",
+            'description': f"Here are the top songs from '{top_playlist['name']}':",
+            'items': [song['name'] for song in top_playlist['top_songs']],
+            'image': top_playlist['cover_art'],
             'template': 'slides/slide6.html'
         })
 
-    # Slide 7: Fun Fact
-    fun_fact = "You explored over 20 different genres this year!"
+    # Slide 7: Discovery Stats
+    if discovery_stats:
+        slides.append({
+            'title': "Your Discovery Stats",
+            'description': (
+                f"This year, you discovered {discovery_stats['new_artists']} new artists and {discovery_stats['new_songs']} new songs. "
+                f"Your favorite discovery was '{discovery_stats['most_listened_song']}'."
+            ),
+            'template': 'slides/slide7.html'
+        })
+
+    # Slide 8: Game (placeholder for interactivity)
     slides.append({
-        'title': "Fun Fact!",
-        'background': 'linear-gradient(135deg, #f6d365, #fda085)',
-        'shape': 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png',  # Example fun fact icon
-        'description': fun_fact,
-        'template': 'slides/slide7.html'
+        'title': "Spotify Game Time!",
+        'description': "Test your knowledge of your listening habits this year.",
+        'template': 'slides/slide8.html'
     })
 
-    # Slide 8: Wrap-Up
+    # Slide 9: Outro
     slides.append({
         'title': "That's a Wrap!",
-        'background': 'linear-gradient(135deg, #d4fc79, #96e6a1)',
-        'shape': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Spotify_icon.svg',
-        'description': "We hope you enjoyed your personalized Spotify Wrapped!",
-        'template': 'slides/slide8.html'
+        'description': "Thanks for listening to Spotify this year! See you next time.",
+        'template': 'slides/slide9.html'
     })
 
     return slides

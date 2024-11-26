@@ -1,6 +1,10 @@
 <div class="slide" style="background: linear-gradient(135deg, #ffafbd, #ffc3a0);">
     <div class="shape" style="background-image: url('/static/shapes/starburst.png');"></div>
     <h1>Your Most Played Artist</h1>
-    <p>{{ slide.description }}</p>
-    <img src="{{ slide.image }}" alt="Most Played Artist Image">
+    {% if slide.description and slide.image %}
+        <p>{{ slide.description }}</p>
+        <img src="{{ slide.image }}" alt="Most Played Artist Image">
+    {% else %}
+        <p>No data available for your most played artist.</p>
+    {% endif %}
 </div>
