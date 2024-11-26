@@ -1,0 +1,10 @@
+<div class="slide" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">
+    <div class="shape" style="background-image: url('/static/shapes/explosion.png');"></div>
+    <h1>Your Top 10 Tracks</h1>
+    <img src="{{ slide.image }}" alt="Top Track Album Cover">
+    <ul>
+        {% for track in slide.items %}
+        <li>{{ track }}</li>
+        {% endfor %}
+    </ul>
+</div>

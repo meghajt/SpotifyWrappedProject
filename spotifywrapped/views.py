@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import requests
 from django.http import HttpResponse
-from .app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+from app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from .models import SpotifyWrap, DuoWrapped
 from django.shortcuts import get_object_or_404
 
@@ -91,7 +91,7 @@ def spotify_wrapped(request):
     # Get the access token from the session
     access_token = request.session.get('spotify_access_token')
 
-    # If no access token, redirect to the Spotify authorization flow
+    # If no access token, redirect to Spotify authorization
     if not access_token:
         messages.error(request, "Spotify access token is missing. Please reconnect.")
         return redirect('get_spotify_auth_url')
@@ -100,7 +100,7 @@ def spotify_wrapped(request):
         "Authorization": f"Bearer {access_token}"
     }
 
-    # Fetch user’s top tracks and artists
+    # Fetch user's top tracks and artists
     top_tracks_url = "https://api.spotify.com/v1/me/top/tracks"
     top_artists_url = "https://api.spotify.com/v1/me/top/artists"
     params = {"limit": 10, "time_range": "medium_term"}
@@ -114,51 +114,41 @@ def spotify_wrapped(request):
         messages.error(request, "Failed to retrieve Spotify data. Please try again.")
         return redirect('home')
 
-    # Generate slide data for presentation
+    # Generate slide data
     slides = generate_wrapped_slides(top_tracks, top_artists)
 
-    context = {
-        'slides': slides,
-    }
+    # Save wrap data to the database
     SpotifyWrap.objects.create(
         user=request.user,
         wrap_data={'top_tracks': top_tracks, 'top_artists': top_artists}
     )
 
-    context = {
-        'slides': generate_wrapped_slides(top_tracks, top_artists),
-    }
-    return render(request, 'spotify_wrapped.html', context)
+    # Render the wrapped page with dynamic slides
+    return render(request, 'base_slides.html', {'slides': slides})
+
 
 def generate_wrapped_slides(top_tracks, top_artists):
     slides = []
 
-    # Slide 1: Welcome
+    # Slide 1: Intro
     slides.append({
         'title': "Your Spotify Wrapped!",
-        'background': 'linear-gradient(135deg, #1DB954, #1ED760)',
-        'type': 'intro',
-        'shape': 'starburst',
-        'animation': 'zoom-in',
-        'font_size': '4em',
-        'bold_text': True,
-        'center_text': True,
-        'color': '#000',  # Black text for high contrast
-        'image': 'https://www.freepnglogos.com/uploads/spotify-logo-png/spotify-icon-black-17.png'  # Spotify logo
+        'background': 'radial-gradient(circle, rgba(0, 0, 0, 1) 60%, #1DB954 100%)',  # Gradient from black to green
+        'image': 'https://www.freepnglogos.com/uploads/spotify-logo-png/spotify-icon-black-17.png',
+        'description': "Discover your favorite music trends from this year!",
+        'template': 'slides/slide1.html'
     })
-
 
     # Slide 2: Top 10 Tracks
     top_track_names = [track['name'] for track in top_tracks]
     top_track_images = [track['album']['images'][0]['url'] for track in top_tracks] if top_tracks else []
     slides.append({
         'title': "Your Top 10 Tracks",
-        'items': top_track_names,
         'background': 'linear-gradient(135deg, #ff9a9e, #fecfef)',
-        'type': 'list',
-        'shape': 'explosion',
-        'animation': 'slide-left',
-        'image': top_track_images[0] if top_track_images else ''  # Use album cover of the top track
+        'shape': top_track_images[0] if top_track_images else '',  # Use the album cover of the top track as the shape
+        'image': top_track_images[0] if top_track_images else '',  # Use the album cover of the top track
+        'items': top_track_names,
+        'template': 'slides/slide2.html'
     })
 
     # Slide 3: Top 10 Artists
@@ -166,73 +156,64 @@ def generate_wrapped_slides(top_tracks, top_artists):
     top_artist_images = [artist['images'][0]['url'] for artist in top_artists if artist['images']] if top_artists else []
     slides.append({
         'title': "Your Top 10 Artists",
-        'items': top_artist_names,
         'background': 'linear-gradient(135deg, #36d1dc, #5b86e5)',
-        'type': 'list',
-        'shape': 'burst',
-        'animation': 'slide-right',
-        'image': top_artist_images[0] if top_artist_images else ''  # Use image of the top artist
+        'shape': top_artist_images[0] if top_artist_images else '',  # Use the image of the top artist as the shape
+        'image': top_artist_images[0] if top_artist_images else '',  # Use the image of the top artist
+        'items': top_artist_names,
+        'template': 'slides/slide3.html'
     })
 
-    # Slide 4: Top Genres
+    # Slide 4: Favorite Genres
     genres = [genre for artist in top_artists for genre in artist['genres']]
     genre_counts = {genre: genres.count(genre) for genre in set(genres)}
     sorted_genres = sorted(genre_counts, key=genre_counts.get, reverse=True)[:5]
     slides.append({
         'title': "Your Favorite Genres",
-        'items': sorted_genres,
         'background': 'linear-gradient(135deg, #c471ed, #f64f59)',
-        'type': 'list',
-        'shape': 'circle',
-        'animation': 'fade-in',
-        'image': 'https://cdn-icons-png.flaticon.com/512/2462/2462719.png'  # Genre icon from Flaticon
+        'shape': 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png',  # Example genre icon
+        'items': sorted_genres,
+        'template': 'slides/slide4.html'
     })
 
     # Slide 5: Most Played Track
     if top_tracks:
         slides.append({
             'title': "Your Most Played Track",
-            'description': f"{top_tracks[0]['name']} by {', '.join([artist['name'] for artist in top_tracks[0]['artists']])}",
             'background': 'linear-gradient(135deg, #fc466b, #3f5efb)',
-            'type': 'fact',
-            'shape': 'spiky',
-            'animation': 'zoom-in',
-            'image': top_tracks[0]['album']['images'][0]['url'] if top_tracks[0]['album']['images'] else ''  # Album cover of the most played track
+            'shape': top_tracks[0]['album']['images'][0]['url'] if top_tracks[0]['album']['images'] else '',
+            'description': f"{top_tracks[0]['name']} by {', '.join([artist['name'] for artist in top_tracks[0]['artists']])}",
+            'image': top_tracks[0]['album']['images'][0]['url'] if top_tracks[0]['album']['images'] else '',
+            'template': 'slides/slide5.html'
         })
 
     # Slide 6: Most Played Artist
     if top_artists:
         slides.append({
             'title': "Your Most Played Artist",
-            'description': f"{top_artists[0]['name']}",
             'background': 'linear-gradient(135deg, #ffafbd, #ffc3a0)',
-            'type': 'fact',
-            'shape': 'starburst',
-            'animation': 'rotate',
-            'image': top_artist_images[0] if top_artist_images else ''  # Image of the most played artist
+            'shape': top_artist_images[0] if top_artist_images else '',
+            'description': f"{top_artists[0]['name']}",
+            'image': top_artist_images[0] if top_artist_images else '',
+            'template': 'slides/slide6.html'
         })
 
     # Slide 7: Fun Fact
     fun_fact = "You explored over 20 different genres this year!"
     slides.append({
         'title': "Fun Fact!",
-        'description': fun_fact,
         'background': 'linear-gradient(135deg, #f6d365, #fda085)',
-        'type': 'fact',
-        'shape': 'explosion',
-        'animation': 'bounce',
-        'image': 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png'  # Fun fact icon from Flaticon
+        'shape': 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png',  # Example fun fact icon
+        'description': fun_fact,
+        'template': 'slides/slide7.html'
     })
 
     # Slide 8: Wrap-Up
     slides.append({
         'title': "That's a Wrap!",
-        'description': "We hope you enjoyed your personalized Spotify Wrapped!",
         'background': 'linear-gradient(135deg, #d4fc79, #96e6a1)',
-        'type': 'end',
-        'shape': 'burst',
-        'animation': 'slide-up',
-        'image': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg'  # Spotify logo from Wikipedia
+        'shape': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Spotify_icon.svg',
+        'description': "We hope you enjoyed your personalized Spotify Wrapped!",
+        'template': 'slides/slide8.html'
     })
 
     return slides

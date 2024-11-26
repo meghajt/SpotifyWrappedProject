@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Wrapped</title>
+    <style>
+        /* Global styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            color: #fff;
+            font-family: 'Helvetica', sans-serif;
+        }
+
+        .slide {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 40px;
+            transition: all 0.5s;
+        }
+        .slide.active {
+            display: flex;
+        }
+
+        .shape {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            width: 300px;
+            height: 300px;
+            background-size: cover;
+            opacity: 0.5;
+        }
+
+        .btn-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: #1DB954;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+            border-radius: 25px;
+            outline: none;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #1ed760;
+            transform: scale(1.05);
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <!-- Slide container -->
+    <div id="slides-container">
+        {% include 'slides/slide1.html' %}
+        {% include 'slides/slide2.html' %}
+        {% include 'slides/slide3.html' %}
+        {% include 'slides/slide4.html' %}
+        {% include 'slides/slide5.html' %}
+        {% include 'slides/slide6.html' %}
+        {% include 'slides/slide7.html' %}
+        {% include 'slides/slide8.html' %}
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="btn-container">
+        <button class="btn" onclick="prevSlide()">Previous</button>
+        <button class="btn" onclick="nextSlide()">Next</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function showSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (index + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+    </script>
+</body>
+</html>
