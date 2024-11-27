@@ -84,7 +84,16 @@ def profile(request):
 def contact_us(request):
     return render(request, 'contact_us.html')
 
-
+def normalize_genre(genre):
+    if not genre:
+        return "Unknown Genre"
+    genre_lower = genre.lower()
+    if "hip hop" in genre_lower:
+        return "Hip Hop"
+    elif "r&b" in genre_lower:
+        return "R&B"
+    else:
+        return " ".join(word.capitalize() for word in genre.split())
 
 @login_required
 def spotify_wrapped(request):
@@ -111,29 +120,28 @@ def spotify_wrapped(request):
     else:
         messages.error(request, "Failed to fetch top tracks.")
 
-    # Fetch top artist
-    top_artist = None
-    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=1&time_range=medium_term"
+    top_artists = []
+    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=10&time_range=medium_term"
     artist_response = requests.get(top_artists_url, headers=headers)
     if artist_response.status_code == 200:
         artist_data = artist_response.json().get("items", [])
-        if artist_data:
-            artist = artist_data[0]
-            top_artist = {
+        for artist in artist_data:
+            top_artists.append({
                 'name': artist['name'],
+                'genre': normalize_genre(artist['genres'][0]) if artist['genres'] else None,
                 'image_url': artist['images'][0]['url'] if artist['images'] else None,
-                'genre': artist['genres'][0] if artist['genres'] else None,
-                'link': artist['external_urls']['spotify'] if 'external_urls' in artist else None,
-            }
+            })
     else:
-        messages.error(request, "Failed to fetch top artist data.")
+        messages.error(request, "Failed to fetch top tracks.")
+
 
     # Generate slides
     slides = generate_wrapped_slides(
         request.user.first_name,
         top_track=top_tracks[0] if top_tracks else None,
-        top_artist=top_artist,
+        top_artist=top_artists[0] if top_artists else None,
         top_tracks=top_tracks,
+        top_artists=top_artists,
     )
 
     # Save wrap data to the database
@@ -147,7 +155,7 @@ def spotify_wrapped(request):
 
 
 
-def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None):
+def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None):
     slides = []
 
     # Slide 1: Intro
@@ -167,6 +175,12 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tra
         'title': "Your Top 10 Tracks",
         'template': 'slides/slide3.html',
         'top_tracks': top_tracks,
+    })
+    # slide 4
+    slides.append({
+        'title': "Your Top 10 Artists",
+        'template': 'slides/slide4.html',
+        'top_artists': top_artists,
     })
 
     return slides

@@ -1,13 +1,99 @@
-<div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59);">
-    <div class="shape" style="background-image: url('/static/shapes/circle.png');"></div>
-    <h1>Your Favorite Genres</h1>
-    {% if slide.items %}
-        <ul>
-            {% for genre in slide.items %}
-            <li>{{ genre }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No data available for your favorite genres.</p>
-    {% endif %}
-</div>
+<div id="app3"></div>
+
+<script>
+    if (window.innerWidth < 800) {
+        document.getElementById('app3').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59); color: #333333; padding: 15px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 15px;">{{ slide.title }}</h1>
+            
+                <div class="artist-container" style="display: flex; justify-content: space-between; gap: 5px; max-width: 375px; margin: 0 auto; flex-wrap: wrap; border-radius: 10px;">
+                    <!-- First Column -->
+                    <div class="artist-column" style="flex: 1 1 48%; display: flex; flex-direction: column; gap: 5px;">
+                        {% for artist in slide.top_artists|slice:":5" %}
+                        <div class="artist" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 1.2rem; font-weight: bold; color: #333333; width: 30px; text-align: center;">
+                                {{ forloop.counter }}
+                            </div>
+                            <!-- Artist Information -->
+                            <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
+                                <img src="{{ artist.image_url }}" alt="Artist Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 0.7rem; margin: 0; font-weight: bold; color: #333333;">{{ artist.name }}</h3>
+                                    <p style="font-size: 0.6rem; margin: 3px 0 0; color: #555;">{{ artist.genre|default:"Unknown Genre" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+            
+                    <!-- Second Column -->
+                    <div class="artist-column" style="flex: 1 1 48%; display: flex; flex-direction: column; gap: 5px;">
+                        {% for artist in slide.top_artists|slice:"5:" %}
+                        <div class="artist" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 1.2rem; font-weight: bold; color: #333333; width: 30px; text-align: center;">
+                                {{ forloop.counter|add:"5" }}
+                            </div>
+                            <!-- Artist Information -->
+                            <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
+                                <img src="{{ artist.image_url }}" alt="Artist Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 0.7rem; margin: 0; font-weight: bold; color: #333333;">{{ artist.name }}</h3>
+                                    <p style="font-size: 0.6rem; margin: 3px 0 0; color: #555;">{{ artist.genre|default:"Unknown Genre" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('app3').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 30px;">Your Top 10 Artists</h1>
+            
+                <div style="display: flex; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto;">
+                    <!-- First Column -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                        {% for artist in slide.top_artists|slice:":5" %}
+                        <div class="artist" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 2.2rem; font-weight: bold; color: #333333; width: 60px; text-align: center;">
+                                {{ forloop.counter }}
+                            </div>
+                            <!-- Artist Information -->
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                                <img src="{{ artist.image_url }}" alt="Artist Image" style="width: 75px; height: 75px; border-radius: 6px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 1.2rem; margin: 0; font-weight: bold; color: #333333;">{{ artist.name }}</h3>
+                                    <p style="font-size: 1rem; margin: 5px 0 0; color: #555;">{{ artist.genre|default:"Unknown Genre" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+            
+                    <!-- Second Column -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                        {% for artist in slide.top_artists|slice:"5:" %}
+                        <div class="artist" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 2.2rem; font-weight: bold; color: #333333; width: 60px; text-align: center;">
+                                {{ forloop.counter|add:"5" }}
+                            </div>
+                            <!-- Artist Information -->
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                                <img src="{{ artist.image_url }}" alt="Artist Image" style="width: 75px; height: 75px; border-radius: 6px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 1.2rem; margin: 0; font-weight: bold; color: #333333;">{{ artist.name }}</h3>
+                                    <p style="font-size: 1rem; margin: 5px 0 0; color: #555;">{{ artist.genre|default:"Unknown Genre" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>`;
+    }
+</script>
