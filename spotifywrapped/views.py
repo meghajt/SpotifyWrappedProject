@@ -116,6 +116,7 @@ def spotify_wrapped(request):
                 'name': track['name'],
                 'artist': track['artists'][0]['name'] if track['artists'] else "Unknown",
                 'image_url': track['album']['images'][0]['url'] if track['album']['images'] else None,
+                'preview_url': track['preview_url'],
             })
     else:
         messages.error(request, "Failed to fetch top tracks.")

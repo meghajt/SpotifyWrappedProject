@@ -1,16 +1,22 @@
 <div id="app"></div>
 
 <script>
+    // Variable to track the currently playing track URL
+    let currentTrack = null;
+
     if (window.innerWidth < 800) {
         document.getElementById('app').innerHTML = `
             <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59); color: #333333; padding: 15px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
-                <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 15px;">Your Top 10 Tracks</h1>
-            
+                <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 0px;">Your Top 10 Tracks</h1>
+                <p style="text-align: center; font-size: 0.6rem; color: #555; margin-top: 0px; margin-bottom: 5px;">Hover/click on a song to play a clip</p>
                 <div class="track-container" style="display: flex; justify-content: space-between; gap: 5px; max-width: 375px; margin: 0 auto; flex-wrap: wrap; border-radius: 10px;">
                     <!-- First Column -->
                     <div class="track-column" style="flex: 1 1 48%; display: flex; flex-direction: column; gap: 5px;">
                         {% for track in slide.top_tracks|slice:":5" %}
-                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);">
+                        <div class="track" 
+                            style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);"
+                            onmouseenter="playPreview('{{ track.preview_url }}')" 
+                            onmouseleave="stopPreview()">
                             <!-- Ranking Number -->
                             <div style="font-size: 1.2rem; font-weight: bold; color: #333333; width: 30px; text-align: center;">
                                 {{ forloop.counter }}
@@ -26,11 +32,14 @@
                         </div>
                         {% endfor %}
                     </div>
-            
+
                     <!-- Second Column -->
                     <div class="track-column" style="flex: 1 1 48%; display: flex; flex-direction: column; gap: 5px;">
                         {% for track in slide.top_tracks|slice:"5:" %}
-                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);">
+                        <div class="track" 
+                            style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);"
+                            onmouseenter="playPreview('{{ track.preview_url }}')" 
+                            onmouseleave="stopPreview()">
                             <!-- Ranking Number -->
                             <div style="font-size: 1.2rem; font-weight: bold; color: #333333; width: 30px; text-align: center;">
                                 {{ forloop.counter|add:"5" }}
@@ -47,17 +56,21 @@
                         {% endfor %}
                     </div>
                 </div>
+                <audio id="previewAudio" style="display: none;"></audio>
             </div>`;
     } else {
         document.getElementById('app').innerHTML = `
             <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
-                <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 30px;">Your Top 10 Tracks</h1>
-            
-                <div style="display: flex; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto; ">
+                <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 0px;">Your Top 10 Tracks</h1>
+                <p style="text-align: center; font-size: 1.2rem; color: #555; margin-top: 0px; margin-bottom: 10px;">Hover/click on a song to play a clip</p>
+                <div style="display: flex; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto;">
                     <!-- First Column -->
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
                         {% for track in slide.top_tracks|slice:":5" %}
-                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);">
+                        <div class="track" 
+                            style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);"
+                            onmouseenter="playPreview('{{ track.preview_url }}')" 
+                            onmouseleave="stopPreview()">
                             <!-- Ranking Number -->
                             <div style="font-size: 2.2rem; font-weight: bold; color: #333333; width: 60px; text-align: center;">
                                 {{ forloop.counter }}
@@ -73,11 +86,14 @@
                         </div>
                         {% endfor %}
                     </div>
-            
+
                     <!-- Second Column -->
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
                         {% for track in slide.top_tracks|slice:"5:" %}
-                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);">
+                        <div class="track" 
+                            style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);"
+                            onmouseenter="playPreview('{{ track.preview_url }}')" 
+                            onmouseleave="stopPreview()">
                             <!-- Ranking Number -->
                             <div style="font-size: 2.2rem; font-weight: bold; color: #333333; width: 60px; text-align: center;">
                                 {{ forloop.counter|add:"5" }}
@@ -94,6 +110,24 @@
                         {% endfor %}
                     </div>
                 </div>
+                <audio id="previewAudio" style="display: none;"></audio>
             </div>`;
     }
+
+    window.playPreview = (url) => {
+        const audio = document.getElementById('previewAudio');
+        if (currentTrack !== url) {
+            currentTrack = url; // Update the current track
+            audio.src = url; // Set the audio source
+            audio.currentTime = 0; // Ensure it starts from the beginning
+            audio.play();
+        }
+    };
+
+    window.stopPreview = () => {
+        const audio = document.getElementById('previewAudio');
+        audio.pause();
+        currentTrack = null; // Reset the current track
+        audio.src = ''; // Clear the audio source
+    };
 </script>
