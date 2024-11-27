@@ -97,21 +97,19 @@ def spotify_wrapped(request):
     headers = {"Authorization": f"Bearer {access_token}"}
 
     # Fetch top track
-    top_track = None
-    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=1&time_range=medium_term"
+    top_tracks = []
+    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=medium_term"
     track_response = requests.get(top_tracks_url, headers=headers)
     if track_response.status_code == 200:
         track_data = track_response.json().get("items", [])
-        if track_data:
-            track = track_data[0]
-            top_track = {
+        for track in track_data:
+            top_tracks.append({
                 'name': track['name'],
+                'artist': track['artists'][0]['name'] if track['artists'] else "Unknown",
                 'image_url': track['album']['images'][0]['url'] if track['album']['images'] else None,
-                'artist': track['artists'][0]['name'] if track['artists'] else None,
-                'link': track['external_urls']['spotify'] if 'external_urls' in track else None,
-            }
+            })
     else:
-        messages.error(request, "Failed to fetch top track data.")
+        messages.error(request, "Failed to fetch top tracks.")
 
     # Fetch top artist
     top_artist = None
@@ -132,9 +130,10 @@ def spotify_wrapped(request):
 
     # Generate slides
     slides = generate_wrapped_slides(
-        user_first_name,
-        top_track=top_track,
-        top_artist=top_artist
+        request.user.first_name,
+        top_track=top_tracks[0] if top_tracks else None,
+        top_artist=top_artist,
+        top_tracks=top_tracks,
     )
 
     # Save wrap data to the database
@@ -148,7 +147,7 @@ def spotify_wrapped(request):
 
 
 
-def generate_wrapped_slides(first_name, top_track=None, top_artist=None):
+def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None):
     slides = []
 
     # Slide 1: Intro
@@ -162,6 +161,12 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None):
         'template': 'slides/slide2.html',
         'top_track': top_track,
         'top_artist': top_artist,
+    })
+    # slide 3
+    slides.append({
+        'title': "Your Top 10 Tracks",
+        'template': 'slides/slide3.html',
+        'top_tracks': top_tracks,
     })
 
     return slides

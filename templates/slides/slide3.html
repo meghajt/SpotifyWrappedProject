@@ -1,14 +1,99 @@
-<div class="slide" style="background: linear-gradient(135deg, #36d1dc, #5b86e5);">
-    <div class="shape" style="background-image: url('/static/shapes/burst.png');"></div>
-    <h1>Your Top 10 Artists</h1>
-    {% if slide.items %}
-        <img src="{{ slide.image }}" alt="Top Artist Image">
-        <ul>
-            {% for artist in slide.items %}
-            <li>{{ artist.name }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No data available for your top artists.</p>
-    {% endif %}
-</div>
+<div id="app"></div>
+
+<script>
+    if (window.innerWidth < 800) {
+        document.getElementById('app').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59); color: #333333; padding: 15px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 15px;">Your Top 10 Tracks</h1>
+            
+                <div class="track-container" style="display: flex; justify-content: space-between; gap: 5px; max-width: 375px; margin: 0 auto; flex-wrap: wrap; border-radius: 10px;">
+                    <!-- First Column -->
+                    <div class="track-column" style="flex: 1 1 48%; display: flex; flex-direction: column; gap: 5px;">
+                        {% for track in slide.top_tracks|slice:":5" %}
+                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 1.2rem; font-weight: bold; color: #333333; width: 30px; text-align: center;">
+                                {{ forloop.counter }}
+                            </div>
+                            <!-- Track Information -->
+                            <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
+                                <img src="{{ track.image_url }}" alt="Track Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 0.7rem; margin: 0; font-weight: bold; color: #333333;">{{ track.name }}</h3>
+                                    <p style="font-size: 0.6rem; margin: 3px 0 0; color: #555;">{{ track.artist }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+            
+                    <!-- Second Column -->
+                    <div class="track-column" style="flex: 1 1 48%; display: flex; flex-direction: column; gap: 5px;">
+                        {% for track in slide.top_tracks|slice:"5:" %}
+                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 5px; padding: 8px; box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 1.2rem; font-weight: bold; color: #333333; width: 30px; text-align: center;">
+                                {{ forloop.counter|add:"5" }}
+                            </div>
+                            <!-- Track Information -->
+                            <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
+                                <img src="{{ track.image_url }}" alt="Track Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 0.7rem; margin: 0; font-weight: bold; color: #333333;">{{ track.name }}</h3>
+                                    <p style="font-size: 0.6rem; margin: 3px 0 0; color: #555;">{{ track.artist }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('app').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #c471ed, #f64f59); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 30px;">Your Top 10 Tracks</h1>
+            
+                <div style="display: flex; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto; ">
+                    <!-- First Column -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                        {% for track in slide.top_tracks|slice:":5" %}
+                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 2.2rem; font-weight: bold; color: #333333; width: 60px; text-align: center;">
+                                {{ forloop.counter }}
+                            </div>
+                            <!-- Track Information -->
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                                <img src="{{ track.image_url }}" alt="Track Image" style="width: 65px; height: 65px; border-radius: 8px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 1.2rem; margin: 0; font-weight: bold; color: #333333;">{{ track.name }}</h3>
+                                    <p style="font-size: 1rem; margin: 5px 0 0; color: #555;">{{ track.artist }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+            
+                    <!-- Second Column -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                        {% for track in slide.top_tracks|slice:"5:" %}
+                        <div class="track" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px; box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);">
+                            <!-- Ranking Number -->
+                            <div style="font-size: 2.2rem; font-weight: bold; color: #333333; width: 60px; text-align: center;">
+                                {{ forloop.counter|add:"5" }}
+                            </div>
+                            <!-- Track Information -->
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                                <img src="{{ track.image_url }}" alt="Track Image" style="width: 65px; height: 65px; border-radius: 8px; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <h3 style="font-size: 1.2rem; margin: 0; font-weight: bold; color: #333333;">{{ track.name }}</h3>
+                                    <p style="font-size: 1rem; margin: 5px 0 0; color: #555;">{{ track.artist }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>`;
+    }
+</script>
