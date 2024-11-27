@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from .models import SpotifyWrap, DuoWrapped
 from django.shortcuts import get_object_or_404
+from collections import Counter
 
 
 def register(request):
@@ -90,10 +91,40 @@ def normalize_genre(genre):
     genre_lower = genre.lower()
     if "hip hop" in genre_lower:
         return "Hip Hop"
-    elif "r&b" in genre_lower:
+    elif "r&b" in genre_lower or "rnb" in genre_lower:
         return "R&B"
     else:
         return " ".join(word.capitalize() for word in genre.split())
+
+
+def top_genres(access_token):
+    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    response = requests.get(top_artists_url, headers=headers)
+    if response.status_code != 200:
+        return []  # Return an empty list if the request fails
+
+    # Extract the first genre from each artist and normalize it
+    genres = []
+    artist_data = response.json().get("items", [])
+    for artist in artist_data:
+        if artist.get('genres'):  # Check if the artist has genres listed
+            first_genre = artist['genres'][0]  # Get the first listed genre
+            normalized_genre = normalize_genre(first_genre)  # Normalize the genre
+            genres.append(normalized_genre)  # Add the normalized genre to the list
+
+    # Count genres and calculate percentages
+    genre_counts = Counter(genres)
+
+    # Format the top genres into a list of dictionaries with percentages
+    top_genres = []
+    for genre, count in genre_counts.most_common(5):
+        percentage = int(round((count / 50) * 100, 1))
+        top_genres.append({'genre': genre, 'count': count, 'percentage': percentage})
+
+    return top_genres
+
 
 @login_required
 def spotify_wrapped(request):
@@ -135,6 +166,7 @@ def spotify_wrapped(request):
     else:
         messages.error(request, "Failed to fetch top tracks.")
 
+    genres = top_genres(access_token)
 
     # Generate slides
     slides = generate_wrapped_slides(
@@ -143,6 +175,7 @@ def spotify_wrapped(request):
         top_artist=top_artists[0] if top_artists else None,
         top_tracks=top_tracks,
         top_artists=top_artists,
+        genres=genres,
     )
 
     # Save wrap data to the database
@@ -156,7 +189,7 @@ def spotify_wrapped(request):
 
 
 
-def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None):
+def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None):
     slides = []
 
     # Slide 1: Intro
@@ -182,6 +215,12 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tra
         'title': "Your Top 10 Artists",
         'template': 'slides/slide4.html',
         'top_artists': top_artists,
+    })
+    # Slide 5: Your Top Genres
+    slides.append({
+        'title': "Your Top 5 Genres",
+        'template': 'slides/slide5.html',
+        'top_genres': genres,
     })
 
     return slides

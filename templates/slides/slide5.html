@@ -1,10 +1,115 @@
-<div class="slide" style="background: linear-gradient(135deg, #fc466b, #3f5efb);">
-    <div class="shape" style="background-image: url('/static/shapes/spiky.png');"></div>
-    <h1>Your Most Played Track</h1>
-    {% if slide.description and slide.image %}
-        <p>{{ slide.description }}</p>
-        <img src="{{ slide.image }}" alt="Most Played Track Album Cover">
-    {% else %}
-        <p>No data available for your most played track.</p>
-    {% endif %}
-</div>
+<div id="app4"></div>
+
+<script>
+    if (window.innerWidth < 500) {
+        document.getElementById('app4').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #f6d365, #fda085); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; text-align: center;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 7px;">Your Top 5 Genres</h1>
+                    <p style="text-align: center; font-size: .75rem; color: #333333; margin-top: 0px; margin-bottom: 0px;">Your top genres based on the main genre of your top 50 artists</p>
+                    <p style="text-align: center; font-size: .75rem; color: #333333; margin-top: 1px; margin-bottom: 17px;">Hover/click to see number of artists</p>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        {% for genre in slide.top_genres %}
+                        <li style="margin-bottom: 20px;">
+                            <!-- Genre Name -->
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: .8rem; font-weight: bold;">
+                                <span style="text-align: left; width: 40%;">{{ genre.genre }}</span>
+                            </div>
+                            <!-- Bar Chart -->
+                            <div style="display: flex; align-items: center; max-width: 100%; height: 20px; position: relative;">
+                                <!-- Bar Container -->
+                                <div 
+                                    class="bar-container" 
+                                    style="flex: 1; height: 22.5px; background: rgba(255, 255, 255, 0.2); border-radius: 5px; overflow: hidden; position: relative;"
+                                    onmouseover="showArtistCount(this)" 
+                                    onmouseout="hideArtistCount(this)">
+                                    <!-- Filled Bar -->
+                                    <div style="height: 100%; width: {{ genre.percentage }}%; background: linear-gradient(90deg, #f5a623, #ec6f5a); border-radius: 5px; position: relative;">
+                                        <!-- Number of Artists Inside Bar -->
+                                        <span class="artist-count" style="
+                                            position: absolute; 
+                                            left: 10px; 
+                                            top: 50%; 
+                                            transform: translateY(-50%); 
+                                            font-size: .8rem; 
+                                            font-weight: bold; 
+                                            color: #333333; 
+                                            white-space: nowrap; 
+                                            display: none;">
+                                            {{ genre.count }} Artists
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- Percentage -->
+                                <span style="margin-left: 10px; font-size: .75rem; font-weight: bold; color: #333333;">{{ genre.percentage }}%</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('app4').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #f6d365, #fda085); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; text-align: center;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 10px;">Your Top 5 Genres</h1>
+                    <p style="text-align: center; font-size: 1rem; color: #333333; margin-top: 0px; margin-bottom: 0px;">Your top genres based on the main genre of your top 50 artists</p>
+                    <p style="text-align: center; font-size: 1rem; color: #333333; margin-top: 1px; margin-bottom: 25px;">Hover/click to see number of artists</p>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        {% for genre in slide.top_genres %}
+                        <li style="margin-bottom: 20px;">
+                            <!-- Genre Name -->
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1rem; font-weight: bold;">
+                                <span style="text-align: left; width: 40%;">{{ genre.genre }}</span>
+                            </div>
+                            <!-- Bar Chart -->
+                            <div style="display: flex; align-items: center; max-width: 100%; height: 20px; position: relative;">
+                                <!-- Bar Container -->
+                                <div 
+                                    class="bar-container" 
+                                    style="flex: 1; height: 27.5px; background: rgba(255, 255, 255, 0.2); border-radius: 5px; overflow: hidden; position: relative;"
+                                    onmouseover="showArtistCount(this)" 
+                                    onmouseout="hideArtistCount(this)">
+                                    <!-- Filled Bar -->
+                                    <div style="height: 100%; width: {{ genre.percentage }}%; background: linear-gradient(90deg, #f5a623, #ec6f5a); border-radius: 5px; position: relative;">
+                                        <!-- Number of Artists Inside Bar -->
+                                        <span class="artist-count" style="
+                                            position: absolute; 
+                                            left: 10px; 
+                                            top: 54%; 
+                                            transform: translateY(-50%); 
+                                            font-size: 1rem; 
+                                            font-weight: bold; 
+                                            color: #333333; 
+                                            white-space: nowrap; 
+                                            display: none;">
+                                            {{ genre.count }} Artists
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- Percentage -->
+                                <span style="margin-left: 10px; font-size: 1rem; font-weight: bold; color: #333333;">{{ genre.percentage }}%</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>`;
+    }
+
+    // Show the artist count when the mouse is over the bar container
+    function showArtistCount(container) {
+        const artistCount = container.querySelector('.artist-count');
+        if (artistCount) {
+            artistCount.style.display = 'block';
+        }
+    }
+
+    // Hide the artist count when the mouse leaves the bar container
+    function hideArtistCount(container) {
+        const artistCount = container.querySelector('.artist-count');
+        if (artistCount) {
+            artistCount.style.display = 'none';
+        }
+    }
+</script>
