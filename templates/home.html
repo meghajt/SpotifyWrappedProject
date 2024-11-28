@@ -5,66 +5,99 @@
 {% block content %}
 <head>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+        html, body {
+            height: 100%; /* Ensures the body covers the full viewport height */
             margin: 0;
-            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(#1db954, #191414); /* Spotify gradient background */
+            color: white;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* Center the content vertically */
         .container {
-            width: 80%;
-            margin: 0 auto;
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
             padding: 20px;
             text-align: center;
+            flex-grow: 1; /* Ensures the container grows to fill available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Start aligning content a bit higher */
+            gap: 20px; /* Adds spacing between sections */
+            padding-top: 50px; /* Slight offset from the top */
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 3rem;
             margin-bottom: 20px;
-            color: #333;
+            color: #fff;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 2px;
         }
 
         p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            color: #555;
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            color: #b3b3b3;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
+        /* Card container styling */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
         }
 
-        li {
-            display: inline-block;
-            margin-top: 10px;
+        .card {
+            background: #191414;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none; /* Ensures the link style doesn't affect the card */
+            color: inherit; /* Inherit text color */
         }
 
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #1DB954; /* Spotify green color */
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background-color 0.3s;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
         }
 
-        .btn:hover {
-            background-color: #1aa34a;
+        .card h3 {
+            font-size: 1.75rem;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: #b3b3b3;
+            line-height: 1.6;
         }
     </style>
 </head>
 
 <div class="container">
-    <h1>Welcome to Your Home Page!</h1>
-    <p>Here you can explore all the amazing features of the Spotify Wrapped application.</p>
-
-    <ul>
-        <li><a href="{% url 'spotify_wrapped' %}" class="btn">View Spotify Wrapped</a></li>
-        <li><a href="{% url 'view_saved_wraps' %}" class="btn">View Your Saved Wraps</a></li>
-    </ul>
+    <h1>Welcome to Your Spotify Wrapped!</h1>    
+    <div class="card-container">
+        <a href="{% url 'spotify_wrapped' %}" class="card">
+            <h3>View Your Spotify Wrapped</h3>
+            <p>Check out your personalized year-in-music experience with detailed insights and stats.</p>
+        </a>
+        
+        <a href="{% url 'view_saved_wraps' %}" class="card">
+            <h3>View Your Saved Wraps</h3>
+            <p>Review and manage your previously saved Wrapped experiences.</p>
+        </a>    
+    </div>
 </div>
+
 {% endblock %}
