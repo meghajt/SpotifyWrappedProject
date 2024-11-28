@@ -1,10 +1,51 @@
-<div class="slide" style="background: linear-gradient(135deg, #ffafbd, #ffc3a0);">
-    <div class="shape" style="background-image: url('/static/shapes/starburst.png');"></div>
-    <h1>Your Most Played Artist</h1>
-    {% if slide.description and slide.image %}
-        <p>{{ slide.description }}</p>
-        <img src="{{ slide.image }}" alt="Most Played Artist Image">
-    {% else %}
-        <p>No data available for your most played artist.</p>
-    {% endif %}
-</div>
+<div id="app5"></div>
+
+<script>
+    if (window.innerWidth < 800) {
+        document.getElementById('app5').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #2af598, #009efd); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.1);">
+                <div style="border-radius: 15px; overflow: hidden;">
+                    <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 30px;">Your Hidden Gems</h1>
+            
+                    <div style="display: flex; justify-content: center; gap: 40px; align-items: center; flex-wrap: wrap;">
+                        <!-- Least Popular Artist Section -->
+                        <div class="hidden-gem" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">Least Popular Artist: {{ slide.least_popular_artist.name }}</h3>
+                            <p style="font-size: .9rem; margin-bottom: 15px;">Genre: {{ slide.least_popular_artist.genre }}</p>
+                            <img src="{{ slide.least_popular_artist.image_url }}" alt="Artist Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);">
+                        </div>
+            
+                        <!-- Least Popular Song Section -->
+                        <div class="hidden-gem" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">Least Popular Song: {{ slide.least_popular_song.name }}</h3>
+                            <p style="font-size: .9rem; margin-bottom: 15px;">By: {{ slide.least_popular_song.artist }}</p>
+                            <img src="{{ slide.least_popular_song.image_url }}" alt="Song Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.075);">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('app5').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #2af598, #009efd); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                <div style="border-radius: 15px; overflow: hidden;">
+                    <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 30px;">Your Hidden Gems</h1>
+            
+                    <div style="display: flex; justify-content: center; gap: 40px; align-items: center; flex-wrap: wrap;">
+                        <!-- Least Popular Artist Section -->
+                        <div class="hidden-gem" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">Least Popular Artist: {{ slide.least_popular_artist.name }}</h3>
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">Genre: {{ slide.least_popular_artist.genre }}</p>
+                            <img src="{{ slide.least_popular_artist.image_url }}" alt="Artist Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);">
+                        </div>
+            
+                        <!-- Least Popular Song Section -->
+                        <div class="hidden-gem" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">Least Popular Song: {{ slide.least_popular_song.name }}</h3>
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">By: {{ slide.least_popular_song.artist }}</p>
+                            <img src="{{ slide.least_popular_song.image_url }}" alt="Song Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.05);">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }
+</script>

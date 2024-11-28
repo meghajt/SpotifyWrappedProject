@@ -71,7 +71,7 @@ def profile(request):
     user = request.user
     # Fetch outstanding Duo Wrapped invitations
     duo_invitations = DuoWrapped.objects.filter(invitee=user, is_accepted=False)
-    
+
     context = {
         'first_name': user.first_name,
         'last_name': user.last_name,
@@ -125,6 +125,55 @@ def top_genres(access_token):
 
     return top_genres
 
+def get_least_popular(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    # Fetch top tracks
+    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    track_response = requests.get(top_tracks_url, headers=headers)
+    least_popular_song = None
+
+    if track_response.status_code == 200:
+        track_data = track_response.json().get("items", [])
+        if track_data:
+            # Find the song with the lowest popularity
+            least_popular_song = min(
+                track_data,
+                key=lambda track: track.get("popularity", 101),  # Use 101 as a fallback for missing popularity
+                default=None
+            )
+            if least_popular_song:
+                least_popular_song = {
+                    'name': least_popular_song['name'],
+                    'artist': least_popular_song['artists'][0]['name'] if least_popular_song['artists'] else "Unknown",
+                    'popularity': least_popular_song['popularity'],
+                    'image_url': least_popular_song['album']['images'][0]['url'] if least_popular_song['album']['images'] else None,
+                    'preview_url': least_popular_song['preview_url'],
+                }
+
+    # Fetch top artists
+    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
+    artist_response = requests.get(top_artists_url, headers=headers)
+    least_popular_artist = None
+
+    if artist_response.status_code == 200:
+        artist_data = artist_response.json().get("items", [])
+        if artist_data:
+            # Find the artist with the lowest popularity
+            least_popular_artist = min(
+                artist_data,
+                key=lambda artist: artist.get("popularity", 101),  # Use 101 as a fallback for missing popularity
+                default=None
+            )
+            if least_popular_artist:
+                least_popular_artist = {
+                    'name': least_popular_artist['name'],
+                    'genre': normalize_genre(least_popular_artist['genres'][0]) if least_popular_artist['genres'] else None,
+                    'popularity': least_popular_artist['popularity'],
+                    'image_url': least_popular_artist['images'][0]['url'] if least_popular_artist['images'] else None,
+                }
+
+    return least_popular_song, least_popular_artist
 
 @login_required
 def spotify_wrapped(request):
@@ -168,6 +217,8 @@ def spotify_wrapped(request):
 
     genres = top_genres(access_token)
 
+    least_popular_song, least_popular_artist = get_least_popular(access_token)
+
     # Generate slides
     slides = generate_wrapped_slides(
         request.user.first_name,
@@ -176,6 +227,8 @@ def spotify_wrapped(request):
         top_tracks=top_tracks,
         top_artists=top_artists,
         genres=genres,
+        least_popular_artist=least_popular_artist,
+        least_popular_song=least_popular_song,
     )
 
     # Save wrap data to the database
@@ -189,7 +242,7 @@ def spotify_wrapped(request):
 
 
 
-def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None):
+def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None, least_popular_artist=None, least_popular_song=None):
     slides = []
 
     # Slide 1: Intro
@@ -222,17 +275,24 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tra
         'template': 'slides/slide5.html',
         'top_genres': genres,
     })
+    # Slide 6: Least Popular Picks
+    slides.append({
+        'title': "Your Hidden Gems",
+        'template': 'slides/slide6.html',
+        'least_popular_artist': least_popular_artist,
+        'least_popular_song': least_popular_song,
+    })
 
     return slides
 
 @login_required
 def view_saved_wraps(request):
     saved_wraps = SpotifyWrap.objects.filter(user=request.user).order_by('-created_at')
-    
+
     if not saved_wraps:
         messages.info(request, "You don't have any saved wraps yet.")
         return redirect('home')
-    
+
     return render(request, 'select_wrap.html', {'saved_wraps': saved_wraps})
 
 @login_required
@@ -242,7 +302,7 @@ def display_selected_wrap(request, wrap_id):
     except SpotifyWrap.DoesNotExist:
         messages.error(request, "The selected wrap does not exist.")
         return redirect('view_saved_wraps')
-    
+
     top_tracks = selected_wrap.wrap_data.get('top_tracks', [])
     top_artists = selected_wrap.wrap_data.get('top_artists', [])
     slides = generate_wrapped_slides(top_tracks, top_artists)
@@ -259,7 +319,7 @@ def invite_duo_wrapped(request):
         invitee_username = request.POST.get('invitee')
         try:
             invitee = User.objects.get(username=invitee_username)
-            
+
             # Ensure inviter is not inviting themselves
             if invitee == request.user:
                 messages.error(request, "You cannot invite yourself.")
@@ -278,10 +338,10 @@ def invite_duo_wrapped(request):
                 # Create a new invitation if no pending one exists
                 DuoWrapped.objects.create(inviter=request.user, invitee=invitee)
                 messages.success(request, f"Invitation sent to {invitee_username}.")
-                
+
         except User.DoesNotExist:
             messages.error(request, "User not found.")
-    
+
     return redirect('profile')
 
 
@@ -302,7 +362,7 @@ def accept_duo_invitation(request, duo_id):
         return redirect('view_duo_wrapped', duo_id=duo_invitation.id)
     else:
         messages.error(request, "No wrap data found to share in Duo Wrapped.")
-    
+
     return redirect('home')
 
 
