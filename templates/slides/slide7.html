@@ -1,9 +1,51 @@
-<div class="slide" style="background: linear-gradient(135deg, #f6d365, #fda085);">
-    <div class="shape" style="background-image: url('/static/shapes/explosion.png');"></div>
-    <h1>Fun Fact!</h1>
-    {% if slide.description %}
-        <p>{{ slide.description }}</p>
-    {% else %}
-        <p>No fun fact available.</p>
-    {% endif %}
-</div>
+<div id="app6"></div>
+
+<script>
+    if (window.innerWidth < 800) {
+        document.getElementById('app6').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #d4fc79, #96e6a1); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.1);">
+                <div style="border-radius: 15px; overflow: hidden;">
+                    <h1 style="text-align: center; font-size: 1.5rem; margin-bottom: 30px;">Your Most Popular Picks</h1>
+            
+                    <div style="display: flex; justify-content: center; gap: 40px; align-items: center; flex-wrap: wrap;">
+                        <!-- Most Popular Artist Section -->
+                        <div class="popular-artist" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">Most Popular Artist: {{ slide.most_popular_artist.name }}</h3>
+                            <p style="font-size: .9rem; margin-bottom: 15px;">Genre: {{ slide.most_popular_artist.genre }}</p>
+                            <img src="{{ slide.most_popular_artist.image_url }}" alt="Artist Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);">
+                        </div>
+            
+                        <!-- Most Popular Song Section -->
+                        <div class="popular-song" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">Most Popular Song: {{ slide.most_popular_song.name }}</h3>
+                            <p style="font-size: .9rem; margin-bottom: 15px;">By: {{ slide.most_popular_song.artist }}</p>
+                            <img src="{{ slide.most_popular_song.image_url }}" alt="Song Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.075);">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('app6').innerHTML = `
+            <div class="slide" style="background: linear-gradient(135deg, #d4fc79, #96e6a1); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                <div style="border-radius: 15px; overflow: hidden;">
+                    <h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 30px;">Your Popular Takes</h1>
+            
+                    <div style="display: flex; justify-content: center; gap: 40px; align-items: center; flex-wrap: wrap;">
+                        <!-- Most Popular Artist Section -->
+                        <div class="popular-artist" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">Most Popular Artist: {{ slide.most_popular_artist.name }}</h3>
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">Genre: {{ slide.most_popular_artist.genre }}</p>
+                            <img src="{{ slide.most_popular_artist.image_url }}" alt="Artist Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);">
+                        </div>
+            
+                        <!-- Most Popular Song Section -->
+                        <div class="popular-song" style="flex: 1; max-width: 400px; text-align: center;">
+                            <h3 style="font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">Most Popular Song: {{ slide.most_popular_song.name }}</h3>
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">By: {{ slide.most_popular_song.artist }}</p>
+                            <img src="{{ slide.most_popular_song.image_url }}" alt="Song Image" style="width: 80%; height: auto; border-radius: 15px; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.05);">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }
+</script>

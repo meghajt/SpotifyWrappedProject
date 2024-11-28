@@ -175,6 +175,56 @@ def get_least_popular(access_token):
 
     return least_popular_song, least_popular_artist
 
+def get_most_popular(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    # Fetch top tracks
+    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    track_response = requests.get(top_tracks_url, headers=headers)
+    most_popular_song = None
+
+    if track_response.status_code == 200:
+        track_data = track_response.json().get("items", [])
+        if track_data:
+            # Find the song with the highest popularity
+            most_popular_song = max(
+                track_data,
+                key=lambda track: track.get("popularity", -1),  # Use -1 as a fallback for missing popularity
+                default=None
+            )
+            if most_popular_song:
+                most_popular_song = {
+                    'name': most_popular_song['name'],
+                    'artist': most_popular_song['artists'][0]['name'] if most_popular_song['artists'] else "Unknown",
+                    'popularity': most_popular_song['popularity'],
+                    'image_url': most_popular_song['album']['images'][0]['url'] if most_popular_song['album']['images'] else None,
+                    'preview_url': most_popular_song['preview_url'],
+                }
+
+    # Fetch top artists
+    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
+    artist_response = requests.get(top_artists_url, headers=headers)
+    most_popular_artist = None
+
+    if artist_response.status_code == 200:
+        artist_data = artist_response.json().get("items", [])
+        if artist_data:
+            # Find the artist with the highest popularity
+            most_popular_artist = max(
+                artist_data,
+                key=lambda artist: artist.get("popularity", -1),  # Use -1 as a fallback for missing popularity
+                default=None
+            )
+            if most_popular_artist:
+                most_popular_artist = {
+                    'name': most_popular_artist['name'],
+                    'genre': normalize_genre(most_popular_artist['genres'][0]) if most_popular_artist['genres'] else "Unknown Genre",
+                    'popularity': most_popular_artist['popularity'],
+                    'image_url': most_popular_artist['images'][0]['url'] if most_popular_artist['images'] else None,
+                }
+
+    return most_popular_song, most_popular_artist
+
 @login_required
 def spotify_wrapped(request):
     # Fetch top track
@@ -218,6 +268,7 @@ def spotify_wrapped(request):
     genres = top_genres(access_token)
 
     least_popular_song, least_popular_artist = get_least_popular(access_token)
+    most_popular_song, most_popular_artist = get_most_popular(access_token)
 
     # Generate slides
     slides = generate_wrapped_slides(
@@ -229,6 +280,8 @@ def spotify_wrapped(request):
         genres=genres,
         least_popular_artist=least_popular_artist,
         least_popular_song=least_popular_song,
+        most_popular_artist=most_popular_artist,
+        most_popular_song=most_popular_song,
     )
 
     # Save wrap data to the database
@@ -242,7 +295,9 @@ def spotify_wrapped(request):
 
 
 
-def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None, least_popular_artist=None, least_popular_song=None):
+def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None,
+                            least_popular_artist=None, least_popular_song=None, most_popular_artist=None,
+                            most_popular_song=None):
     slides = []
 
     # Slide 1: Intro
@@ -281,6 +336,13 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tra
         'template': 'slides/slide6.html',
         'least_popular_artist': least_popular_artist,
         'least_popular_song': least_popular_song,
+    })
+    # Slide 7: Most Popular Artist and Song
+    slides.append({
+        'title': "Your Most Popular Picks",
+        'template': 'slides/slide7.html',
+        'most_popular_artist': most_popular_artist,  # Assuming top_artist is the most popular artist
+        'most_popular_song': most_popular_song,  # Assuming top_track is the most popular song
     })
 
     return slides
