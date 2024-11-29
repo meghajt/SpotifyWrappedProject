@@ -13,27 +13,28 @@
             color: white;
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            background-repeat: no-repeat;
+            background-size: cover;
         }
 
         .container {
             background-color: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            padding: 2.5rem; /* Reduced padding */
-            max-width: 600px; /* Reduced max-width */
-            width: 100%;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
         h2 {
             font-weight: 600;
             text-align: center;
-            margin-bottom: 2rem;
-            color: #fff;
-            font-size: 2.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
         }
 
         .form-group {
@@ -44,100 +45,72 @@
             font-weight: bold;
             margin-bottom: 0.5rem;
             display: block;
-            color: #bbb;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .form-control {
-            border-radius: 50px;
-            padding: 1rem;
+            border-radius: 20px;
+            padding: 0.5rem;
             background-color: #282828;
             border: 1px solid #1db954;
             color: white;
-            width: 100%;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .form-control:focus {
             border-color: #1db954;
-            box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+            box-shadow: 0 0 5px rgba(29, 185, 84, 0.5);
         }
 
         .password-rules {
             color: #aaa;
-            font-size: 0.9em;
-            margin-top: 10px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
         }
 
         .btn {
             background-color: #1db954;
             color: white;
             width: 100%;
-            padding: 1.2rem;
-            border-radius: 50px;
+            padding: 0.8rem;
+            border-radius: 20px;
             font-weight: bold;
-            transition: background-color 0.3s, transform 0.3s;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .btn:hover {
             background-color: #1aa34a;
-            transform: translateY(-2px);
         }
 
-        .btn:active {
-            background-color: #137c2b;
-            transform: translateY(2px);
+        .text-center a {
+            color: #1db954;
+            text-decoration: none;
+            font-size: 0.9rem;
         }
 
-        .error {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 1rem;
+        .text-center a:hover {
+            color: white;
+        }
+
+        .container p {
+            font-size: 0.9rem;
+            color: #bbb;
+            text-align: center;
+            margin-top: 10px;
         }
 
         ul.error {
             list-style: none;
             padding: 0;
+            margin-top: 1rem;
+            color: #ff4d4d;
+            font-size: 0.85rem;
         }
-
-        .form-group:last-of-type {
-            margin-bottom: 2.5rem;
-        }
-
-        .text-center a {
-            color: #1db954; /* Green text for login link */
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s;
-        }
-
-        .text-center a:hover {
-            color: white;
-            text-decoration: underline;
-        }
-
-        .password-rules ul {
-            margin: 0;
-            padding: 0;
-        }
-
-        .password-rules li {
-            margin-bottom: 5px;
-        }
-
-        .container p {
-            font-size: 1rem;
-            color: #bbb;
-            text-align: center;
-            margin-top: 20px;
-        }
-
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Register for Spotify Wrapped</h2>
+        <h2>Register</h2>
         <form method="post">
             {% csrf_token %}
 
@@ -165,13 +138,13 @@
                 <label for="id_password1">Password:</label>
                 {{ form.password1 }}
                 <div class="password-rules">
-                    <p>Password must:</p>
+                    <p>Password must include:</p>
                     <ul>
-                        <li>Be at least 8 characters long</li>
-                        <li>Contain at least one uppercase letter</li>
-                        <li>Contain at least one lowercase letter</li>
-                        <li>Contain at least one digit</li>
-                        <li>Contain at least one special character (e.g., @, #, $, etc.)</li>
+                        <li>8+ characters</li>
+                        <li>1 uppercase letter</li>
+                        <li>1 lowercase letter</li>
+                        <li>1 digit</li>
+                        <li>1 special character</li>
                     </ul>
                 </div>
             </div>
@@ -197,8 +170,8 @@
             {% endif %}
         </form>
 
-        <div class="text-center mt-3">
-            <p>Already have an account? <a href="{% url 'login' %}">Log in here</a>.</p>
+        <div class="text-center mt-2">
+            <p>Already have an account? <a href="{% url 'login' %}">Log in</a>.</p>
         </div>
     </div>
 </body>
