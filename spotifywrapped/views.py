@@ -229,15 +229,19 @@ def get_most_popular(access_token):
 
     return most_popular_song, most_popular_artist
 
-def scramble_word(word):
-    if len(word) <= 1:
-        return word
-    word_list = list(word)
-    while True:
+
+def scramble_word(phrase):
+    def scramble_word(word):
+        if len(word) <= 1:
+            return word
+        word_list = list(word)
         random.shuffle(word_list)
-        scrambled = ''.join(word_list)
-        if scrambled != word:  # Ensure scrambled word isn't the same as the original
-            return scrambled
+        return ''.join(word_list)
+
+    # Split the phrase into words, scramble each word, and join them back
+    scrambled_words = [scramble_word(word) for word in phrase.split()]
+    return ' '.join(scrambled_words)
+
 
 
 def validate_song_guess(request):
