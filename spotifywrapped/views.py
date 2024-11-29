@@ -349,10 +349,20 @@ def spotify_wrapped(request):
     )
 
     # Save wrap data to the database
-#    SpotifyWrap.objects.create(
-#        user=request.user,
-#        wrap_data={'top_tracks': top_tracks, 'top_artists': top_artists}
-#    )
+    wrap_data = {
+        'top_tracks': top_tracks,
+        'top_artists': top_artists,
+        'genres': genres,
+        'least_popular_song': least_popular_song,
+        'least_popular_artist': least_popular_artist,
+        'most_popular_song': most_popular_song,
+        'most_popular_artist': most_popular_artist,
+        'tracks_game': tracks_game,
+    }
+    SpotifyWrap.objects.create(
+        user=request.user,
+        wrap_data=wrap_data  # Save all the wrap data as a dictionary
+    )
 
     # Render the wrapped page with dynamic slides
     return render(request, 'base_slides.html', {'slides': slides})
@@ -440,19 +450,44 @@ def view_saved_wraps(request):
 @login_required
 def display_selected_wrap(request, wrap_id):
     try:
+        # Fetch the selected wrap for the logged-in user
         selected_wrap = SpotifyWrap.objects.get(id=wrap_id, user=request.user)
     except SpotifyWrap.DoesNotExist:
         messages.error(request, "The selected wrap does not exist.")
         return redirect('view_saved_wraps')
 
-    top_tracks = selected_wrap.wrap_data.get('top_tracks', [])
-    top_artists = selected_wrap.wrap_data.get('top_artists', [])
-    slides = generate_wrapped_slides(top_tracks, top_artists)
+    # Extract data from the wrap_data field
+    wrap_data = selected_wrap.wrap_data
+    top_tracks = wrap_data.get('top_tracks', [])
+    top_artists = wrap_data.get('top_artists', [])
+    genres = wrap_data.get('genres', [])
+    least_popular_song = wrap_data.get('least_popular_song', None)
+    least_popular_artist = wrap_data.get('least_popular_artist', None)
+    most_popular_song = wrap_data.get('most_popular_song', None)
+    most_popular_artist = wrap_data.get('most_popular_artist', None)
+    tracks_game = wrap_data.get('tracks_game', [])
 
+    # Generate slides using the stored wrap data
+    slides = generate_wrapped_slides(
+        first_name=request.user.first_name,
+        top_track=top_tracks[0] if top_tracks else None,
+        top_artist=top_artists[0] if top_artists else None,
+        top_tracks=top_tracks,
+        top_artists=top_artists,
+        genres=genres,
+        least_popular_artist=least_popular_artist,
+        least_popular_song=least_popular_song,
+        most_popular_artist=most_popular_artist,
+        most_popular_song=most_popular_song,
+        tracks_game=tracks_game,
+    )
+
+    # Render the slides in the Spotify Wrapped template
     context = {
         'slides': slides,
     }
-    return render(request, 'spotify_wrapped.html', context)
+    return render(request, 'base_slides.html', {'slides': slides})
+
 
 @login_required
 def invite_duo_wrapped(request):
@@ -513,13 +548,61 @@ def view_duo_wrapped(request, duo_id):
     """Display the combined Duo Wrapped slides for both inviter and invitee."""
     duo_wrapped = get_object_or_404(DuoWrapped, id=duo_id, is_accepted=True)
 
+    # Fetch the latest wrap for the inviter
     inviter_wrap = SpotifyWrap.objects.filter(user=duo_wrapped.inviter).last()
-    invitee_wrap_data = duo_wrapped.invitee_wrap_data
+    invitee_wrap_data = duo_wrapped.invitee_wrap_data  # Get invitee's wrap data from the saved DuoWrapped model
 
     if inviter_wrap and invitee_wrap_data:
-        # Generate slides for both inviter and invitee's data
-        inviter_slides = generate_wrapped_slides(inviter_wrap.wrap_data.get('top_tracks', []), inviter_wrap.wrap_data.get('top_artists', []))
-        invitee_slides = generate_wrapped_slides(invitee_wrap_data.get('top_tracks', []), invitee_wrap_data.get('top_artists', []))
+        # Extract data for inviter
+        inviter_wrap_data = inviter_wrap.wrap_data
+        inviter_top_tracks = inviter_wrap_data.get('top_tracks', [])
+        inviter_top_artists = inviter_wrap_data.get('top_artists', [])
+        inviter_genres = inviter_wrap_data.get('genres', [])
+        inviter_least_popular_song = inviter_wrap_data.get('least_popular_song', None)
+        inviter_least_popular_artist = inviter_wrap_data.get('least_popular_artist', None)
+        inviter_most_popular_song = inviter_wrap_data.get('most_popular_song', None)
+        inviter_most_popular_artist = inviter_wrap_data.get('most_popular_artist', None)
+        inviter_tracks_game = inviter_wrap_data.get('tracks_game', [])
+
+        # Generate slides for inviter
+        inviter_slides = generate_wrapped_slides(
+            first_name=duo_wrapped.inviter.first_name,
+            top_track=inviter_top_tracks[0] if inviter_top_tracks else None,
+            top_artist=inviter_top_artists[0] if inviter_top_artists else None,
+            top_tracks=inviter_top_tracks,
+            top_artists=inviter_top_artists,
+            genres=inviter_genres,
+            least_popular_artist=inviter_least_popular_artist,
+            least_popular_song=inviter_least_popular_song,
+            most_popular_artist=inviter_most_popular_artist,
+            most_popular_song=inviter_most_popular_song,
+            tracks_game=inviter_tracks_game,
+        )
+
+        # Extract data for invitee
+        invitee_top_tracks = invitee_wrap_data.get('top_tracks', [])
+        invitee_top_artists = invitee_wrap_data.get('top_artists', [])
+        invitee_genres = invitee_wrap_data.get('genres', [])
+        invitee_least_popular_song = invitee_wrap_data.get('least_popular_song', None)
+        invitee_least_popular_artist = invitee_wrap_data.get('least_popular_artist', None)
+        invitee_most_popular_song = invitee_wrap_data.get('most_popular_song', None)
+        invitee_most_popular_artist = invitee_wrap_data.get('most_popular_artist', None)
+        invitee_tracks_game = invitee_wrap_data.get('tracks_game', [])
+
+        # Generate slides for invitee
+        invitee_slides = generate_wrapped_slides(
+            first_name=duo_wrapped.invitee.first_name,
+            top_track=invitee_top_tracks[0] if invitee_top_tracks else None,
+            top_artist=invitee_top_artists[0] if invitee_top_artists else None,
+            top_tracks=invitee_top_tracks,
+            top_artists=invitee_top_artists,
+            genres=invitee_genres,
+            least_popular_artist=invitee_least_popular_artist,
+            least_popular_song=invitee_least_popular_song,
+            most_popular_artist=invitee_most_popular_artist,
+            most_popular_song=invitee_most_popular_song,
+            tracks_game=invitee_tracks_game,
+        )
 
         context = {
             'inviter_slides': inviter_slides,
@@ -529,6 +612,7 @@ def view_duo_wrapped(request, duo_id):
     else:
         messages.error(request, "Wrap data is missing for one or both users.")
         return redirect('home')
+
 
 def get_spotify_auth_url(request):
     auth_url = "https://accounts.spotify.com/authorize"
