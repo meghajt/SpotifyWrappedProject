@@ -18,33 +18,56 @@
         }
 
         .slide {
-            display: none;
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             text-align: center;
             padding: 40px;
-            transition: all 0.5s;
-        }
-        .slide.active {
-            display: flex;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.6s ease;
         }
 
-        .shape {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: -1;
-            width: 300px;
-            height: 300px;
-            background-size: cover;
-            opacity: 0.5;
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Transition effects */
+        .fade {
+            transform: translateX(0);
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .slide-from-right {
+            transform: translateX(100%);
+        }
+
+        .slide-from-left {
+            transform: translateX(-100%);
+        }
+
+        .zoom-in {
+            transform: scale(0.5);
+        }
+
+        .zoom-out {
+            transform: scale(1.5);
+        }
+
+        .flip-horizontal {
+            transform: rotateY(90deg);
+        }
+
+        .flip-vertical {
+            transform: rotateX(90deg);
         }
 
         .btn-container {
@@ -57,17 +80,15 @@
         }
 
         .btn {
-            width: 150px; /* Fixed width for uniformity */
-            height: 50px; /* Fixed height for consistency */
-            padding: 0; /* Remove internal padding for uniform size */
+            width: 150px;
+            height: 50px;
             font-size: 1.2em;
             background: #1DB954;
             border: none;
             color: #fff;
             cursor: pointer;
-            transition: background 0.3s, transform 0.3s;
+            transition: background 0.3s;
             border-radius: 25px;
-            outline: none;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -76,11 +97,6 @@
 
         .btn:hover {
             background: #1ed760;
-            transform: scale(1.05);
-        }
-
-        .btn:active {
-            transform: scale(0.95);
         }
     </style>
 </head>
@@ -102,10 +118,45 @@
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
 
+        // List of transition effects
+        const transitionClasses = [
+            'fade',
+            'slide-from-right',
+            'slide-from-left',
+            'zoom-in',
+            'zoom-out',
+            'flip-horizontal',
+            'flip-vertical'
+        ];
+
+        function applyRandomTransition(slide) {
+            // Remove all transition classes
+            slide.classList.remove(...transitionClasses);
+
+            // Add a random transition class
+            const randomClass = transitionClasses[Math.floor(Math.random() * transitionClasses.length)];
+            slide.classList.add(randomClass);
+        }
+
         function showSlide(index) {
-            slides[currentSlide].classList.remove('active');
+            // Reset all slides
+            slides.forEach(slide => {
+                slide.style.opacity = '0';
+                slide.style.transform = 'none'; // Reset any transformations
+                slide.classList.remove('active', ...transitionClasses);
+            });
+
+            // Update current slide index
             currentSlide = (index + slides.length) % slides.length;
-            slides[currentSlide].classList.add('active');
+
+            // Activate the target slide
+            const nextSlide = slides[currentSlide];
+            nextSlide.style.opacity = '1';
+            nextSlide.style.transform = 'none'; // Ensure no residual transform effects
+            nextSlide.classList.add('active');
+
+            // Apply a random transition
+            applyRandomTransition(nextSlide);
         }
 
         function nextSlide() {
@@ -115,6 +166,9 @@
         function prevSlide() {
             showSlide(currentSlide - 1);
         }
+
+        // Initialize the first slide
+        slides[currentSlide].classList.add('active');
     </script>
 </body>
 </html>
