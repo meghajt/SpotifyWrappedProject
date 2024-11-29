@@ -101,6 +101,18 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
         }
 
+        .button-container {
+            display: flex;
+            justify-content: center; /* Center align buttons */
+            gap: 20px; /* Add space between the buttons */
+            margin-top: 20px; /* Space above the buttons */
+        }
+        
+        /* Remove margin-top from individual buttons if set */
+        .btn-login, .btn-register {
+            margin-top: 0; /* Ensure buttons align evenly */
+        }
+        
         .btn-login:hover, .btn-register:hover {
             transform: translateY(-5px);
             background: linear-gradient(45deg, #1ed760, #1db954);
@@ -119,7 +131,37 @@
         .btn-register:hover {
             background: linear-gradient(45deg, #0099ff, #0066ff);
         }
-
+        
+        @media (max-width: 768px) {
+            #colorBox {
+                padding: 30px 20px; /* Reduce padding */
+                border-radius: 15px; /* Slightly less rounded corners */
+            }
+        
+            #colorBox h1 {
+                font-size: 2.5rem; /* Reduce font size for the heading */
+            }
+        
+            #colorBox p {
+                font-size: 1rem; /* Smaller text for mobile */
+            }
+        
+            .button-container {
+                flex-direction: column; /* Stack buttons vertically */
+                gap: 10px; /* Smaller gap between buttons */
+            }
+        
+            .btn-login, .btn-register {
+                padding: 15px 40px; /* Adjust button padding */
+                font-size: 1.2rem; /* Slightly smaller font */
+            }
+        
+            header nav a {
+                font-size: 1rem; /* Smaller font for navigation */
+                padding: 6px 10px; /* Adjust padding */
+            }
+        }
+        
         /* Footer styles */
         footer {
             padding: 10px 20px;
@@ -153,8 +195,10 @@
 <div id="colorBox">
     <h1>Spotify Wrapped</h1>
     <p>Explore your year in music with your personalized Wrapped experience.</p>
-    <a href="{% url 'login' %}" class="btn-login">Log In</a>
-    <a href="{% url 'register' %}" class="btn-register">Register</a>
+    <div class="button-container">
+        <a href="{% url 'login' %}" class="btn-login">Log In</a>
+        <a href="{% url 'register' %}" class="btn-register">Register</a>
+    </div>
 </div>
 
 <footer>

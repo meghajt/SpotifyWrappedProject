@@ -2,75 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Global Styles */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-
-        body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(to bottom right, #1db954, #191414);
+            background-size: cover;
+            background-attachment: fixed;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-repeat: no-repeat;
-            background-size: cover;
         }
-
+        
         .container {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
             border-radius: 10px;
             padding: 2rem;
-            max-width: 400px;
-            width: 90%;
+            width: 90%; /* Default width to ensure it fills most of the screen */
+            max-width: 400px; /* Prevent it from becoming too wide on larger screens */
+            min-width: 300px; /* Prevent it from becoming too narrow */
+            margin: auto;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
-
+        
         h2 {
             font-weight: 600;
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             font-size: 1.5rem;
         }
-
+        
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
-
+        
         .form-group label {
             font-weight: bold;
+            font-size: 1rem;
             margin-bottom: 0.5rem;
             display: block;
-            font-size: 0.9rem;
         }
-
+        
         .form-control {
             border-radius: 20px;
-            padding: 0.5rem;
+            padding: 0.6rem;
             background-color: #282828;
             border: 1px solid #1db954;
             color: white;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
-
+        
         .form-control:focus {
             border-color: #1db954;
             box-shadow: 0 0 5px rgba(29, 185, 84, 0.5);
         }
-
+        
         .password-rules {
             color: #aaa;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             margin-top: 0.5rem;
+            line-height: 1.4;
         }
-
+        
+        .password-rules ul {
+            padding-left: 1rem;
+        }
+        
         .btn {
             background-color: #1db954;
             color: white;
@@ -80,34 +83,63 @@
             font-weight: bold;
             font-size: 1rem;
         }
-
+        
         .btn:hover {
             background-color: #1aa34a;
         }
-
+        
+        .text-center {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
         .text-center a {
             color: #1db954;
             text-decoration: none;
-            font-size: 0.9rem;
         }
-
+        
         .text-center a:hover {
             color: white;
         }
-
-        .container p {
-            font-size: 0.9rem;
-            color: #bbb;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        ul.error {
+        
+        .error {
             list-style: none;
             padding: 0;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             color: #ff4d4d;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Media Queries for Small Screens (Mobile) */
+        @media (max-width: 576px) {
+            .container {
+                padding: 1.5rem; /* Adjust padding for smaller screens */
+                width: 95%; /* Fill almost the entire screen width */
+                max-width: none; /* No fixed max width */
+            }
+        
+            h2 {
+                font-size: 1.2rem;
+            }
+        
+            .form-control {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+        
+            .password-rules {
+                font-size: 0.75rem;
+                line-height: 1.2;
+            }
+        
+            .btn {
+                font-size: 0.9rem;
+                padding: 0.7rem;
+            }
+        
+            .text-center {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -173,7 +205,7 @@
             {% endif %}
         </form>
 
-        <div class="text-center mt-2">
+        <div class="text-center">
             <p>Already have an account? <a href="{% url 'login' %}">Log in</a>.</p>
         </div>
     </div>
