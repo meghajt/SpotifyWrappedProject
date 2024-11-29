@@ -18,7 +18,6 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -29,7 +28,6 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
-
 
 def login_view(request):
     if request.method == 'POST':
@@ -42,22 +40,18 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form': form})
 
-
 def logout_view(request):
     logout(request)
     request.session.flush()
     return redirect('landing')
 
-
 def landing(request):
     return render(request, 'landing.html')
-
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def home(request):
     return render(request, 'home.html')
-
 
 @login_required
 def delete_account(request):
@@ -68,7 +62,6 @@ def delete_account(request):
         return redirect('landing')
 
     return render(request, 'delete_account.html')
-
 
 @login_required
 def profile(request):
@@ -84,7 +77,6 @@ def profile(request):
     }
     return render(request, 'profile.html', context)
 
-
 @login_required
 def contact_us(request):
     return render(request, 'contact_us.html')
@@ -99,7 +91,6 @@ def normalize_genre(genre):
         return "R&B"
     else:
         return " ".join(word.capitalize() for word in genre.split())
-
 
 def top_genres(access_token):
     top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
@@ -229,7 +220,6 @@ def get_most_popular(access_token):
 
     return most_popular_song, most_popular_artist
 
-
 def scramble_word(phrase):
     def scramble_word(word):
         if len(word) <= 1:
@@ -241,8 +231,6 @@ def scramble_word(phrase):
     # Split the phrase into words, scramble each word, and join them back
     scrambled_words = [scramble_word(word) for word in phrase.split()]
     return ' '.join(scrambled_words)
-
-
 
 def validate_song_guess(request):
     if request.method == 'POST':
@@ -369,8 +357,6 @@ def spotify_wrapped(request):
     # Render the wrapped page with dynamic slides
     return render(request, 'base_slides.html', {'slides': slides})
 
-
-
 def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None,
                             least_popular_artist=None, least_popular_song=None, most_popular_artist=None,
                             most_popular_song=None, tracks_game=None,):
@@ -431,6 +417,13 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tra
             'scrambled_name': scrambled_name,
             'correct_name': random_track['name'],  # Pass correct name to check user's input
         })
+    # Slide 9: Outro
+    slides.append({
+        'title': "Thats's a Wrap!",
+        'template': 'slides/slide9.html',
+        'message': "We hope you enjoyed this journey through your music tastes. See you next year!",
+        'first_name': first_name
+    })
 
     return slides
 

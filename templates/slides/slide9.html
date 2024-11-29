@@ -1,9 +1,7 @@
-<div class="slide" style="background: linear-gradient(135deg, #d4fc79, #96e6a1);">
-    <div class="shape" style="background-image: url('/static/shapes/burst.png');"></div>
-    <h1>That's a Wrap!</h1>
-    {% if slide.description %}
-        <p>{{ slide.description }}</p>
-    {% else %}
-        <p>Thanks for listening to Spotify this year!</p>
-    {% endif %}
+<div class="slide" style="background: linear-gradient(135deg, #00ff51, #004200); color: white; padding: 40px 20px; 
+                font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.1); 
+                flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+    <h1 style="font-weight: bold; font-size: 2.5rem; margin-bottom: 20px;">That's a Wrap!</h1>
+    <p style="font-size: 1.2rem; margin-bottom: 20px;">Hope you enjoyed this journey through your music tastes.</p>
+    <p style="font-size: 1.2rem;">Create another wrap soon, {{ slide.first_name }}!</p>
 </div>
