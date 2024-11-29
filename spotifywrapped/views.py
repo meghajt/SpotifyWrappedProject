@@ -13,6 +13,10 @@ from app_secrets import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from .models import SpotifyWrap, DuoWrapped
 from django.shortcuts import get_object_or_404
 from collections import Counter
+import random
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 def register(request):
@@ -225,6 +229,59 @@ def get_most_popular(access_token):
 
     return most_popular_song, most_popular_artist
 
+def scramble_word(word):
+    if len(word) <= 1:
+        return word
+    word_list = list(word)
+    while True:
+        random.shuffle(word_list)
+        scrambled = ''.join(word_list)
+        if scrambled != word:  # Ensure scrambled word isn't the same as the original
+            return scrambled
+
+
+def validate_song_guess(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user_guess = data.get('user_guess', '').strip().lower()
+        correct_name = data.get('correct_name', '').strip().lower()
+
+        if user_guess == correct_name:
+            return JsonResponse({'success': True, 'message': 'Correct!'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Incorrect! Try again.'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+def new_song_question(request):
+    access_token = request.session.get('spotify_access_token')
+    headers = {"Authorization": f"Bearer {access_token}"}
+    tracks_game_other = []
+    tracks_game_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    tracks_game_response = requests.get(tracks_game_url, headers=headers)
+    if tracks_game_response.status_code == 200:
+        tracks_game_data = tracks_game_response.json().get("items", [])
+        for track_game in tracks_game_data:
+            tracks_game_other.append({
+                'name': track_game['name'],
+                'artist': track_game['artists'][0]['name'] if track_game['artists'] else "Unknown",
+                'image_url': track_game['album']['images'][0]['url'] if track_game['album']['images'] else None,
+            })
+    else:
+        messages.error(request, "Failed to fetch top tracks.")
+
+    if not tracks_game_other:
+        return JsonResponse({"error": "No tracks available"}, status=400)
+
+    random_track = random.choice(tracks_game_other)
+    scrambled_name = scramble_word(random_track['name'])
+
+    return JsonResponse({
+        "album_cover_other": random_track['image_url'],
+        "scrambled_name_other": scrambled_name,
+        "correct_name_other": random_track['name']
+    })
+
 @login_required
 def spotify_wrapped(request):
     # Fetch top track
@@ -247,6 +304,20 @@ def spotify_wrapped(request):
                 'artist': track['artists'][0]['name'] if track['artists'] else "Unknown",
                 'image_url': track['album']['images'][0]['url'] if track['album']['images'] else None,
                 'preview_url': track['preview_url'],
+            })
+    else:
+        messages.error(request, "Failed to fetch top tracks.")
+
+    tracks_game = []
+    tracks_game_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    tracks_game_response = requests.get(tracks_game_url, headers=headers)
+    if tracks_game_response.status_code == 200:
+        tracks_game_data = tracks_game_response.json().get("items", [])
+        for track_game in tracks_game_data:
+            tracks_game.append({
+                'name': track_game['name'],
+                'artist': track_game['artists'][0]['name'] if track_game['artists'] else "Unknown",
+                'image_url': track_game['album']['images'][0]['url'] if track_game['album']['images'] else None,
             })
     else:
         messages.error(request, "Failed to fetch top tracks.")
@@ -282,6 +353,7 @@ def spotify_wrapped(request):
         least_popular_song=least_popular_song,
         most_popular_artist=most_popular_artist,
         most_popular_song=most_popular_song,
+        tracks_game=tracks_game,
     )
 
     # Save wrap data to the database
@@ -297,7 +369,7 @@ def spotify_wrapped(request):
 
 def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None,
                             least_popular_artist=None, least_popular_song=None, most_popular_artist=None,
-                            most_popular_song=None):
+                            most_popular_song=None, tracks_game=None,):
     slides = []
 
     # Slide 1: Intro
@@ -344,6 +416,17 @@ def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tra
         'most_popular_artist': most_popular_artist,  # Assuming top_artist is the most popular artist
         'most_popular_song': most_popular_song,  # Assuming top_track is the most popular song
     })
+    # Slide 8
+    if tracks_game:
+        random_track = random.choice(tracks_game)  # Randomly select a track for the game
+        scrambled_name = scramble_word(random_track['name'])
+        slides.append({
+            'title': "Guess the Song!",
+            'template': 'slides/slide8.html',
+            'album_cover': random_track['image_url'],
+            'scrambled_name': scrambled_name,
+            'correct_name': random_track['name'],  # Pass correct name to check user's input
+        })
 
     return slides
 

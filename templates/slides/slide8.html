@@ -1,19 +1,125 @@
-<div class="slide" style="background: linear-gradient(135deg, #2af598, #009efd);">
-    <div class="shape" style="background-image: url('/static/shapes/gamepad.png');"></div>
-    <h1>Spotify Game Time!</h1>
-    <p>Test your knowledge of your listening habits this year!</p>
-    {% if slide.options %}
-        <div style="text-align: center; margin-top: 20px;">
-            {% for option in slide.options %}
-            <button style="margin: 5px; padding: 10px 20px; background: #1DB954; border: none; border-radius: 5px; color: #fff; cursor: pointer;">
-                {{ option }}
-            </button>
-            {% endfor %}
+<div class="slide" style="background: linear-gradient(135deg, #f7971e, #ffd200); color: #333333; padding: 40px 20px; 
+                font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.1); height: 100vh; 
+                flex-direction: column;  justify-content: flex-start; align-items: center; padding-top: 115px; text-align: center;">
+    
+    <h2 style="font-weight: bold; font-size: 2rem; color: #333333; margin-bottom: 1.5rem;">Track Scramble Game</h2>
+    
+    <img src="{{ slide.album_cover }}" alt="Album Cover" 
+         style="width: 250px; height: 250px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);">
+    
+    <p style="color: #333333; font-size: 1.2rem; margin-top: 1.5rem;">Unscramble the letters to guess the song name:</p>
+    
+    <!-- Display scrambled name -->
+    <h3 style="color: #DC143C; font-weight: bold; font-size: 1.5rem;" id="scrambledName">
+        {{ slide.scrambled_name }}
+    </h3>
+    
+    <!-- Hidden element to store the correct name -->
+    <span id="correctName" style="display: none;">{{ slide.correct_name }}</span>
+    
+    <form id="guessForm" method="post" style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px;">
+        {% csrf_token %}
+        <input type="text" name="user_guess" id="user_guess" 
+               class="form-control" placeholder="Enter your guess" 
+               style="margin: 0 auto; width: 100%; padding: 0.75rem; border-radius: 25px; border: 1px solid #333333; text-align: center;">
+        
+        <div style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">
+            <!-- Check Answer Button -->
+            <button type="button" id="checkAnswer" class="btn btn-success" 
+                    style="padding: 10px 20px; font-size: 1rem; border-radius: 25px; background-color: #28a745; border: none; cursor: pointer;">Check Answer</button>
+            
+            <!-- Give Up Button -->
+            <button type="button" id="giveUp" class="btn btn-danger" 
+                    style="padding: 10px 20px; font-size: 1rem; border-radius: 25px; background-color: #dc3545; border: none; cursor: pointer;">Give Up</button>
+            
+            <!-- New Question Button -->
+            <button type="button" id="newQuestion" class="btn btn-primary" 
+                    style="padding: 10px 20px; font-size: 1rem; border-radius: 25px; background-color: #007bff; border: none; cursor: pointer;">New Question</button>
         </div>
-        <div style="margin-top: 20px; color: #fff;">
-            <p>Stay tuned for the answer on the next slide!</p>
-        </div>
-    {% else %}
-        <p>No game options available. Enjoy the rest of your Wrapped!</p>
-    {% endif %}
+    </form>
+
+    <div id="resultMessage" style="margin-top: 1.5rem; display: none; font-size: 1.2rem; color: #333333;"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkAnswerButton = document.getElementById("checkAnswer");
+            const giveUpButton = document.getElementById("giveUp");
+            const newQuestionButton = document.getElementById("newQuestion");
+            const userGuessInput = document.getElementById("user_guess");
+            const resultMessage = document.getElementById("resultMessage");
+            const albumCover = document.querySelector("img[alt='Album Cover']");
+            const correctNameElement = document.getElementById("correctName"); // Get the element for correct name
+            const scrambledNameElement = document.getElementById("scrambledName");
+        
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+            // Check Answer via AJAX
+            checkAnswerButton.addEventListener("click", function () {
+                const userGuess = userGuessInput.value.trim();
+                const correctName = correctNameElement.textContent; // Fetch correct name dynamically
+        
+                fetch("{% url 'validate_song_guess' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: JSON.stringify({
+                        user_guess: userGuess,
+                        correct_name: correctName // Send the correct name dynamically
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultMessage.style.display = "block";
+                    if (data.success) {
+                        resultMessage.innerHTML = "<p class='text-success' style='font-weight: bold;'>Correct! Great job!</p>";
+                    } else {
+                        resultMessage.innerHTML = "<p class='text-danger' style='font-weight: bold;'>Incorrect! Try again.</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    resultMessage.style.display = "block";
+                    resultMessage.innerHTML = "<p class='text-danger' style='font-weight: bold;'>An error occurred. Please try again.</p>";
+                });
+            });
+        
+            // Give Up
+            giveUpButton.addEventListener("click", function () {
+                const correctName = correctNameElement.textContent; // Fetch correct name dynamically
+                resultMessage.style.display = "block";
+                resultMessage.innerHTML = `<p class='text-warning' style='font-weight: bold;'>The correct answer was: <span class='text-info'>${correctName}</span></p>`;
+            });
+        
+            // Fetch New Question without Reloading
+            newQuestionButton.addEventListener("click", function () {
+                fetch("{% url 'new_song_question' %}")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            resultMessage.style.display = "block";
+                            resultMessage.innerHTML = `<p class='text-danger' style='font-weight: bold;'>${data.error}</p>`;
+                        } else {
+                            // Update the UI with the new question data
+                            albumCover.src = data.album_cover_other;
+                            scrambledNameElement.textContent = data.scrambled_name_other;
+                            correctNameElement.textContent = data.correct_name_other; // Update correct name dynamically
+                            resultMessage.style.display = "none"; // Clear previous result messages
+                            userGuessInput.value = ""; // Clear the input field
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching new question:", error);
+                        resultMessage.style.display = "block";
+                        resultMessage.innerHTML = "<p class='text-danger' style='font-weight: bold;'>An error occurred. Please try again.</p>";
+                    });
+            });
+        });
+    </script>
 </div>

@@ -20,4 +20,6 @@ urlpatterns = [
     path('invite-duo-wrapped/', invite_duo_wrapped, name='invite_duo_wrapped'),
     path('accept-duo-invitation/<int:duo_id>/', accept_duo_invitation, name='accept_duo_invitation'),
     path('duo-wrapped/<int:duo_id>/', view_duo_wrapped, name='view_duo_wrapped'),
+    path('validate_song_guess/', views.validate_song_guess, name='validate_song_guess'),
+    path('new_song_question/', views.new_song_question, name='new_song_question'),
 ]
