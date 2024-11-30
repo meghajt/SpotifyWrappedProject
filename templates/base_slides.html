@@ -132,9 +132,60 @@
         .btn:hover {
             background: #1ed760;
         }
+
+        /* Navbar styling */
+        .navbar {
+            position: fixed;
+            top: -60px; /* Hidden initially */
+            width: 100%;
+            background-color: #1DB954;
+            z-index: 1000;
+            display: flex;
+            justify-content: flex-start; /* Align content to the left */
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: top 0.3s ease; /* Smooth transition for showing and hiding the navbar */
+        }
+
+        .navbar.visible {
+            top: 0; /* Show navbar when visible */
+        }
+
+        .navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .navbar button:hover {
+            color: #fffaa0; /* Subtle hover effect */
+        }
+
+        .hover-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px; /* Narrow hover area */
+            z-index: 999; /* Above all other content */
+            background: transparent; /* Invisible hover area */
+        }
     </style>
 </head>
 <body>
+    <!-- Hover Area -->
+    <div class="hover-area" id="hover-area"></div>
+
+    <!-- Navbar -->
+    <div class="navbar" id="navbar">
+        <button onclick="window.location.href='{% url 'home' %}'">Spotify Wrapped</button>
+    </div>
+    
     <!-- Slide container -->
     <div id="slides-container">
         {% for slide in slides %}
@@ -151,6 +202,8 @@
     <script>
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
+        const navbar = document.getElementById('navbar');
+        const hoverArea = document.getElementById('hover-area');
 
         // List of transition effects
         const transitionClasses = [
@@ -202,6 +255,15 @@
         // Initialize the first slide
         slides[currentSlide].classList.add('active');
         applyRandomTransition(slides[currentSlide]);
+
+        // Navbar hover functionality
+        hoverArea.addEventListener('mouseenter', () => {
+            navbar.classList.add('visible');
+        });
+
+        navbar.addEventListener('mouseleave', () => {
+            navbar.classList.remove('visible');
+        });
     </script>
 </body>
 </html>
