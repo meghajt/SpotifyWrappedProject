@@ -6,10 +6,10 @@
 <head>
     <style>
         html, body {
-            height: 100%; /* Ensures the body covers the full viewport height */
+            height: 100%;
             margin: 0;
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(#1db954, #191414); /* Spotify gradient background */
+            background: linear-gradient(to bottom, #1db954, #191414); /* Spotify gradient background */
             color: white;
             display: flex;
             flex-direction: column;
@@ -22,16 +22,16 @@
             margin: auto;
             padding: 20px;
             text-align: center;
-            flex-grow: 1; /* Ensures the container grows to fill available space */
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Start aligning content a bit higher */
-            gap: 20px; /* Adds spacing between sections */
-            padding-top: 50px; /* Slight offset from the top */
+            justify-content: flex-start;
+            gap: 20px;
+            padding-top: 50px;
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 20px;
             color: #fff;
             text-transform: uppercase;
@@ -43,16 +43,13 @@
             font-size: 1.25rem;
             margin-bottom: 40px;
             color: #b3b3b3;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
-        /* Card container styling */
+        /* Responsive card container */
         .card-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
             margin-top: 30px;
         }
 
@@ -62,8 +59,8 @@
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            text-decoration: none; /* Ensures the link style doesn't affect the card */
-            color: inherit; /* Inherit text color */
+            text-decoration: none;
+            color: inherit;
         }
 
         .card:hover {
@@ -72,7 +69,7 @@
         }
 
         .card h3 {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             color: #fff;
             margin-bottom: 10px;
         }
@@ -81,6 +78,39 @@
             font-size: 1rem;
             color: #b3b3b3;
             line-height: 1.6;
+        }
+
+        /* Mobile-first responsiveness */
+/* Card styling for smaller screens */
+        @media (max-width: 600px) {
+            .card-container {
+                grid-template-columns: repeat(2, 1fr); /* Two cards per row on smaller screens */
+                gap: 10px; /* Reduce gap for tighter layout */
+            }
+        
+            .card {
+                padding: 10px; /* Smaller padding */
+                border-radius: 8px; /* Slightly reduced border radius */
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Softer shadow */
+            }
+        
+            .card h3 {
+                font-size: 1rem; /* Smaller font size for the card titles */
+            }
+        
+            .card p {
+                font-size: 0.8rem; /* Smaller font size for the card text */
+                line-height: 1.2; /* Adjust line height for compact text */
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+                color: #fff;
+                text-transform: uppercase;
+                font-weight: 700;
+                letter-spacing: 2px;
+            }
         }
     </style>
 </head>
