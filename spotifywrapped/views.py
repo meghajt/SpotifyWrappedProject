@@ -19,6 +19,17 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 def register(request):
+    """
+    Handles user registration. If the request is POST, processes the registration form.
+    If the form is valid, creates a user, logs them in, and redirects to the home page.
+    Otherwise, renders the registration form.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The response containing the registration form or redirect to the home page.
+    """
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -29,9 +40,18 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
-
-
 def login_view(request):
+    """
+    Handles user login. If the request is POST, processes the login form.
+    If the form is valid, logs the user in and redirects to the home page.
+    Otherwise, renders the login form.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The response containing the login form or redirect to the home page.
+    """
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -43,20 +63,57 @@ def login_view(request):
     return render(request, 'registration/login.html', {'form': form})
 
 def logout_view(request):
+    """
+    Logs out the user, flushes the session, and redirects to the landing page.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: A redirect response to the landing page.
+    """
     logout(request)
     request.session.flush()
     return redirect('landing')
 
 def landing(request):
+    """
+    Renders the landing page.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered landing page.
+    """
     return render(request, 'landing.html')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def home(request):
+    """
+    Renders the home page for logged-in users, with cache control headers set.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered home page.
+    """
     return render(request, 'home.html')
 
 @login_required
 def delete_account(request):
+    """
+    Handles account deletion. If the request is POST, deletes the user account
+    and redirects to the landing page with a success message.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: A redirect response to the landing page.
+    """
     if request.method == 'POST':
         user = request.user
         user.delete()
@@ -67,8 +124,16 @@ def delete_account(request):
 
 @login_required
 def profile(request):
+    """
+    Renders the user's profile page, displaying their basic information and outstanding Duo Wrapped invitations.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered profile page with user details and invitations.
+    """
     user = request.user
-    # Fetch outstanding Duo Wrapped invitations
     duo_invitations = DuoWrapped.objects.filter(invitee=user, is_accepted=False)
 
     context = {
@@ -81,9 +146,28 @@ def profile(request):
 
 @login_required
 def contact_us(request):
+    """
+    Renders the contact us page.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered contact us page.
+    """
     return render(request, 'contact_us.html')
 
 def normalize_genre(genre):
+    """
+    Normalizes the genre string to a standard format. If the genre matches common categories,
+    it will be converted to a standard form. Otherwise, it returns a capitalized version of the genre.
+
+    Args:
+        genre (str): The genre to be normalized.
+
+    Returns:
+        str: The normalized genre.
+    """
     if not genre:
         return "Unknown Genre"
     genre_lower = genre.lower()
@@ -95,6 +179,17 @@ def normalize_genre(genre):
         return " ".join(word.capitalize() for word in genre.split())
 
 def top_genres(access_token, time_range):
+    """
+    Fetches the top genres from the user's top artists on Spotify based on the given time range.
+    Returns the top genres along with the percentage of each genre.
+
+    Args:
+        access_token (str): The Spotify access token to authenticate the API request.
+        time_range (str): The time range for fetching the top artists (e.g., 'short_term', 'medium_term', 'long_term').
+
+    Returns:
+        list: A list of dictionaries containing the top genres and their percentages.
+    """
     top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=50&time_range={time_range}"
     headers = {"Authorization": f"Bearer {access_token}"}
 
@@ -102,19 +197,15 @@ def top_genres(access_token, time_range):
     if response.status_code != 200:
         return []  # Return an empty list if the request fails
 
-    # Extract the first genre from each artist and normalize it
     genres = []
     artist_data = response.json().get("items", [])
     for artist in artist_data:
-        if artist.get('genres'):  # Check if the artist has genres listed
-            first_genre = artist['genres'][0]  # Get the first listed genre
-            normalized_genre = normalize_genre(first_genre)  # Normalize the genre
-            genres.append(normalized_genre)  # Add the normalized genre to the list
+        if artist.get('genres'):
+            first_genre = artist['genres'][0]
+            normalized_genre = normalize_genre(first_genre)
+            genres.append(normalized_genre)
 
-    # Count genres and calculate percentages
     genre_counts = Counter(genres)
-
-    # Format the top genres into a list of dictionaries with percentages
     top_genres = []
     for genre, count in genre_counts.most_common(5):
         percentage = int(round((count / 50) * 100, 1))
@@ -123,9 +214,18 @@ def top_genres(access_token, time_range):
     return top_genres
 
 def get_least_popular(access_token, time_range):
+    """
+    Fetches the least popular song and artist based on popularity from the user's top tracks and artists.
+
+    Args:
+        access_token (str): The Spotify access token to authenticate the API request.
+        time_range (str): The time range for fetching the top tracks and artists.
+
+    Returns:
+        tuple: A tuple containing the least popular song and artist as dictionaries.
+    """
     headers = {"Authorization": f"Bearer {access_token}"}
 
-    # Fetch top tracks
     top_tracks_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
     track_response = requests.get(top_tracks_url, headers=headers)
     least_popular_song = None
@@ -133,10 +233,9 @@ def get_least_popular(access_token, time_range):
     if track_response.status_code == 200:
         track_data = track_response.json().get("items", [])
         if track_data:
-            # Find the song with the lowest popularity
             least_popular_song = min(
                 track_data,
-                key=lambda track: track.get("popularity", 101),  # Use 101 as a fallback for missing popularity
+                key=lambda track: track.get("popularity", 101),
                 default=None
             )
             if least_popular_song:
@@ -148,7 +247,6 @@ def get_least_popular(access_token, time_range):
                     'preview_url': least_popular_song['preview_url'],
                 }
 
-    # Fetch top artists
     top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=50&time_range={time_range}"
     artist_response = requests.get(top_artists_url, headers=headers)
     least_popular_artist = None
@@ -156,10 +254,9 @@ def get_least_popular(access_token, time_range):
     if artist_response.status_code == 200:
         artist_data = artist_response.json().get("items", [])
         if artist_data:
-            # Find the artist with the lowest popularity
             least_popular_artist = min(
                 artist_data,
-                key=lambda artist: artist.get("popularity", 101),  # Use 101 as a fallback for missing popularity
+                key=lambda artist: artist.get("popularity", 101),
                 default=None
             )
             if least_popular_artist:
@@ -173,9 +270,18 @@ def get_least_popular(access_token, time_range):
     return least_popular_song, least_popular_artist
 
 def get_most_popular(access_token, time_range):
+    """
+    Fetches the most popular song and artist based on popularity from the user's top tracks and artists.
+
+    Args:
+        access_token (str): The Spotify access token to authenticate the API request.
+        time_range (str): The time range for fetching the top tracks and artists.
+
+    Returns:
+        tuple: A tuple containing the most popular song and artist as dictionaries.
+    """
     headers = {"Authorization": f"Bearer {access_token}"}
 
-    # Fetch top tracks
     top_tracks_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
     track_response = requests.get(top_tracks_url, headers=headers)
     most_popular_song = None
@@ -183,10 +289,9 @@ def get_most_popular(access_token, time_range):
     if track_response.status_code == 200:
         track_data = track_response.json().get("items", [])
         if track_data:
-            # Find the song with the highest popularity
             most_popular_song = max(
                 track_data,
-                key=lambda track: track.get("popularity", -1),  # Use -1 as a fallback for missing popularity
+                key=lambda track: track.get("popularity", -1),
                 default=None
             )
             if most_popular_song:
@@ -198,7 +303,6 @@ def get_most_popular(access_token, time_range):
                     'preview_url': most_popular_song['preview_url'],
                 }
 
-    # Fetch top artists
     top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=50&time_range={time_range}"
     artist_response = requests.get(top_artists_url, headers=headers)
     most_popular_artist = None
@@ -206,10 +310,9 @@ def get_most_popular(access_token, time_range):
     if artist_response.status_code == 200:
         artist_data = artist_response.json().get("items", [])
         if artist_data:
-            # Find the artist with the highest popularity
             most_popular_artist = max(
                 artist_data,
-                key=lambda artist: artist.get("popularity", -1),  # Use -1 as a fallback for missing popularity
+                key=lambda artist: artist.get("popularity", -1),
                 default=None
             )
             if most_popular_artist:
@@ -223,6 +326,15 @@ def get_most_popular(access_token, time_range):
     return most_popular_song, most_popular_artist
 
 def scramble_word(phrase):
+    """
+    Scrambles the characters in each word of the given phrase.
+
+    Args:
+        phrase (str): The phrase whose words will be scrambled.
+
+    Returns:
+        str: A new phrase with scrambled words.
+    """
     def scramble_word(word):
         if len(word) <= 1:
             return word
@@ -230,11 +342,19 @@ def scramble_word(phrase):
         random.shuffle(word_list)
         return ''.join(word_list)
 
-    # Split the phrase into words, scramble each word, and join them back
     scrambled_words = [scramble_word(word) for word in phrase.split()]
     return ' '.join(scrambled_words)
 
 def validate_song_guess(request):
+    """
+    Validates the user's guess for a song name. Compares the guess with the correct song name.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        JsonResponse: The response indicating whether the user's guess was correct or not.
+    """
     if request.method == 'POST':
         data = json.loads(request.body)
         user_guess = data.get('user_guess', '').strip().lower()
@@ -248,6 +368,16 @@ def validate_song_guess(request):
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 def new_song_question(request):
+    """
+    Generates a new song guessing question by selecting a random song from the user's top tracks
+    and scrambling its name.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        JsonResponse: A response containing the scrambled song name and its album cover image.
+    """
     time_range = request.GET.get('time_range', 'medium_term')
     access_token = request.session.get('spotify_access_token')
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -276,6 +406,11 @@ def new_song_question(request):
         "scrambled_name_other": scrambled_name,
         "correct_name_other": random_track['name']
     })
+
+
+
+
+
 
 @login_required
 def spotify_wrapped(request):
@@ -494,9 +629,287 @@ def display_selected_wrap(request, wrap_id):
     return render(request, 'base_slides.html', {'slides': slides})
 
 
+
+@login_required
+def spotify_wrapped(request):
+    """
+    Generate and display the user's Spotify Wrapped, including top tracks, top artists, genres,
+    least and most popular songs, and a guessing game. The data is fetched from the Spotify API
+    and displayed in dynamic slides.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered template containing the user's Spotify Wrapped slides.
+    """
+    time_range = request.GET.get('time_range', 'medium_term')
+    access_token = request.session.get('spotify_access_token')
+
+    if not access_token:
+        messages.error(request, "Spotify access token is missing. Please reconnect.")
+        return redirect('get_spotify_auth_url')
+
+    user_first_name = request.user.first_name
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    # Fetch top tracks
+    top_tracks = []
+    top_tracks_url = f"https://api.spotify.com/v1/me/top/tracks?limit=10&time_range={time_range}"
+    track_response = requests.get(top_tracks_url, headers=headers)
+    if track_response.status_code == 200:
+        track_data = track_response.json().get("items", [])
+        for track in track_data:
+            top_tracks.append({
+                'name': track['name'],
+                'artist': track['artists'][0]['name'] if track['artists'] else "Unknown",
+                'image_url': track['album']['images'][0]['url'] if track['album']['images'] else None,
+                'preview_url': track['preview_url'],
+            })
+    else:
+        messages.error(request, "Failed to fetch top tracks.")
+
+    # Fetch additional tracks for the game
+    tracks_game = []
+    tracks_game_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
+    tracks_game_response = requests.get(tracks_game_url, headers=headers)
+    if tracks_game_response.status_code == 200:
+        tracks_game_data = tracks_game_response.json().get("items", [])
+        for track_game in tracks_game_data:
+            tracks_game.append({
+                'name': track_game['name'],
+                'artist': track_game['artists'][0]['name'] if track_game['artists'] else "Unknown",
+                'image_url': track_game['album']['images'][0]['url'] if track_game['album']['images'] else None,
+            })
+    else:
+        messages.error(request, "Failed to fetch top tracks.")
+
+    # Fetch top artists
+    top_artists = []
+    top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=10&time_range={time_range}"
+    artist_response = requests.get(top_artists_url, headers=headers)
+    if artist_response.status_code == 200:
+        artist_data = artist_response.json().get("items", [])
+        for artist in artist_data:
+            top_artists.append({
+                'name': artist['name'],
+                'genre': normalize_genre(artist['genres'][0]) if artist['genres'] else None,
+                'image_url': artist['images'][0]['url'] if artist['images'] else None,
+            })
+    else:
+        messages.error(request, "Failed to fetch top tracks.")
+
+    # Fetch top genres
+    genres = top_genres(access_token, time_range)
+
+    # Fetch least and most popular songs and artists
+    least_popular_song, least_popular_artist = get_least_popular(access_token, time_range)
+    most_popular_song, most_popular_artist = get_most_popular(access_token, time_range)
+
+    # Generate slides for the wrapped experience
+    slides = generate_wrapped_slides(
+        request.user.first_name,
+        top_track=top_tracks[0] if top_tracks else None,
+        top_artist=top_artists[0] if top_artists else None,
+        top_tracks=top_tracks,
+        top_artists=top_artists,
+        genres=genres,
+        least_popular_artist=least_popular_artist,
+        least_popular_song=least_popular_song,
+        most_popular_artist=most_popular_artist,
+        most_popular_song=most_popular_song,
+        tracks_game=tracks_game,
+    )
+
+    # Save the wrapped data to the database
+    wrap_data = {
+        'top_tracks': top_tracks,
+        'top_artists': top_artists,
+        'genres': genres,
+        'least_popular_song': least_popular_song,
+        'least_popular_artist': least_popular_artist,
+        'most_popular_song': most_popular_song,
+        'most_popular_artist': most_popular_artist,
+        'tracks_game': tracks_game,
+    }
+    SpotifyWrap.objects.create(
+        user=request.user,
+        wrap_data=wrap_data,  # Save all the wrap data as a dictionary
+        time_range=time_range
+    )
+
+    # Render the wrapped page with dynamic slides
+    return render(request, 'base_slides.html', {'slides': slides})
+
+def generate_wrapped_slides(first_name, top_track=None, top_artist=None, top_tracks=None, top_artists=None, genres=None,
+                            least_popular_artist=None, least_popular_song=None, most_popular_artist=None,
+                            most_popular_song=None, tracks_game=None):
+    """
+    Generate the slides for the Spotify Wrapped experience. This function creates a series of slides
+    based on the provided data, which includes top tracks, top artists, genres, and more.
+
+    Args:
+        first_name (str): The user's first name to personalize the experience.
+        top_track (dict, optional): The user's top track. Defaults to None.
+        top_artist (dict, optional): The user's top artist. Defaults to None.
+        top_tracks (list, optional): List of the user's top tracks. Defaults to None.
+        top_artists (list, optional): List of the user's top artists. Defaults to None.
+        genres (list, optional): The user's top genres. Defaults to None.
+        least_popular_artist (dict, optional): The user's least popular artist. Defaults to None.
+        least_popular_song (dict, optional): The user's least popular song. Defaults to None.
+        most_popular_artist (dict, optional): The user's most popular artist. Defaults to None.
+        most_popular_song (dict, optional): The user's most popular song. Defaults to None.
+        tracks_game (list, optional): List of tracks for the guessing game. Defaults to None.
+
+    Returns:
+        list: A list of slides, each represented as a dictionary containing the title, template, and related data.
+    """
+    slides = []
+
+    # Slide 1: Intro
+    slides.append({
+        'title': f"Welcome to your Spotify Wrapped, {first_name}!",
+        'template': 'slides/slide1.html'
+    })
+    # Slide 2: Top Picks
+    slides.append({
+        'title': "Your Top Spotify Picks",
+        'template': 'slides/slide2.html',
+        'top_track': top_track,
+        'top_artist': top_artist,
+    })
+    # Slide 3: Top Tracks
+    slides.append({
+        'title': "Your Top 10 Tracks",
+        'template': 'slides/slide3.html',
+        'top_tracks': top_tracks,
+    })
+    # Slide 4: Top Artists
+    slides.append({
+        'title': "Your Top 10 Artists",
+        'template': 'slides/slide4.html',
+        'top_artists': top_artists,
+    })
+    # Slide 5: Top Genres
+    slides.append({
+        'title': "Your Top 5 Genres",
+        'template': 'slides/slide5.html',
+        'top_genres': genres,
+    })
+    # Slide 6: Least Popular Picks
+    slides.append({
+        'title': "Your Hidden Gems",
+        'template': 'slides/slide6.html',
+        'least_popular_artist': least_popular_artist,
+        'least_popular_song': least_popular_song,
+    })
+    # Slide 7: Most Popular Picks
+    slides.append({
+        'title': "Your Most Popular Picks",
+        'template': 'slides/slide7.html',
+        'most_popular_artist': most_popular_artist,
+        'most_popular_song': most_popular_song,
+    })
+    # Slide 8: Guess the Song Game
+    if tracks_game:
+        random_track = random.choice(tracks_game)  # Randomly select a track for the game
+        scrambled_name = scramble_word(random_track['name'])
+        slides.append({
+            'title': "Guess the Song!",
+            'template': 'slides/slide8.html',
+            'album_cover': random_track['image_url'],
+            'scrambled_name': scrambled_name,
+            'correct_name': random_track['name'],
+        })
+    # Slide 9: Outro
+    slides.append({
+        'title': "That's a Wrap!",
+        'template': 'slides/slide9.html',
+        'message': "We hope you enjoyed this journey through your music tastes. See you next year!",
+        'first_name': first_name
+    })
+
+    return slides
+
+@login_required
+def view_saved_wraps(request):
+    """
+    View the list of saved Spotify Wrapped experiences for the logged-in user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered template displaying saved wraps, or a redirect if no saved wraps exist.
+    """
+    saved_wraps = SpotifyWrap.objects.filter(user=request.user).order_by('-created_at')
+
+    if not saved_wraps:
+        messages.info(request, "You don't have any saved wraps yet.")
+        return redirect('home')
+
+    return render(request, 'select_wrap.html', {'saved_wraps': saved_wraps})
+
+@login_required
+def display_selected_wrap(request, wrap_id):
+    """
+    Display a selected saved Spotify Wrapped experience for the logged-in user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        wrap_id (int): The ID of the selected wrap.
+
+    Returns:
+        HttpResponse: The rendered template displaying the selected wrap slides, or a redirect if the wrap does not exist.
+    """
+    try:
+        selected_wrap = SpotifyWrap.objects.get(id=wrap_id, user=request.user)
+    except SpotifyWrap.DoesNotExist:
+        messages.error(request, "The selected wrap does not exist.")
+        return redirect('view_saved_wraps')
+
+    wrap_data = selected_wrap.wrap_data
+    top_tracks = wrap_data.get('top_tracks', [])
+    top_artists = wrap_data.get('top_artists', [])
+    genres = wrap_data.get('genres', [])
+    least_popular_song = wrap_data.get('least_popular_song', None)
+    least_popular_artist = wrap_data.get('least_popular_artist', None)
+    most_popular_song = wrap_data.get('most_popular_song', None)
+    most_popular_artist = wrap_data.get('most_popular_artist', None)
+    tracks_game = wrap_data.get('tracks_game', [])
+
+    slides = generate_wrapped_slides(
+        first_name=request.user.first_name,
+        top_track=top_tracks[0] if top_tracks else None,
+        top_artist=top_artists[0] if top_artists else None,
+        top_tracks=top_tracks,
+        top_artists=top_artists,
+        genres=genres,
+        least_popular_artist=least_popular_artist,
+        least_popular_song=least_popular_song,
+        most_popular_artist=most_popular_artist,
+        most_popular_song=most_popular_song,
+        tracks_game=tracks_game,
+    )
+
+    context = {
+        'slides': slides,
+    }
+    return render(request, 'base_slides.html', {'slides': slides})
+
+
 @login_required
 def delete_saved_wrap(request, wrap_id):
-    """Delete a saved Spotify wrap."""
+    """
+    Delete a saved Spotify Wrapped experience for the logged-in user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        wrap_id (int): The ID of the saved wrap to delete.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the view_saved_wraps page after deletion or error message.
+    """
     try:
         saved_wrap = SpotifyWrap.objects.get(id=wrap_id, user=request.user)
         saved_wrap.delete()
@@ -508,7 +921,15 @@ def delete_saved_wrap(request, wrap_id):
 
 @login_required
 def invite_duo_wrapped(request):
-    """Invite a friend to join a Duo Wrapped."""
+    """
+    Send an invitation for a Duo Wrapped experience to another user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the profile page after the invitation is sent or if an error occurs.
+    """
     if request.method == 'POST':
         invitee_username = request.POST.get('invitee')
         try:
@@ -538,10 +959,18 @@ def invite_duo_wrapped(request):
 
     return redirect('profile')
 
-
 @login_required
 def accept_duo_invitation(request, duo_id):
-    """Accept a Duo Wrapped invitation and save the invitee's wrap data."""
+    """
+    Accept a Duo Wrapped invitation and save the invitee's wrap data.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        duo_id (int): The ID of the Duo Wrapped invitation.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the Duo Wrapped view page if successful, or home if data is missing.
+    """
     duo_invitation = get_object_or_404(DuoWrapped, id=duo_id, invitee=request.user, is_accepted=False)
 
     # Fetch the invitee's latest wrap data and save it to the invitation
@@ -559,10 +988,18 @@ def accept_duo_invitation(request, duo_id):
 
     return redirect('home')
 
-
 @login_required
 def view_duo_wrapped(request, duo_id):
-    """Display the combined Duo Wrapped slides for both inviter and invitee."""
+    """
+    Display the combined Duo Wrapped slides for both inviter and invitee.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        duo_id (int): The ID of the Duo Wrapped experience.
+
+    Returns:
+        HttpResponse: The rendered Duo Wrapped page showing slides for both inviter and invitee.
+    """
     duo_wrapped = get_object_or_404(DuoWrapped, id=duo_id, is_accepted=True)
 
     # Fetch the latest wrap for the inviter
@@ -632,6 +1069,15 @@ def view_duo_wrapped(request, duo_id):
 
 
 def get_spotify_auth_url(request):
+    """
+    Generate the URL for Spotify authentication to request access to the user's top tracks and artists.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponseRedirect: Redirects to Spotify's authentication URL.
+    """
     auth_url = "https://accounts.spotify.com/authorize"
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
@@ -644,6 +1090,15 @@ def get_spotify_auth_url(request):
     return redirect(response.url)
 
 def spotify_callback(request):
+    """
+    Handle the callback from Spotify after the user authorizes the app. Retrieves the access token.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to Spotify Wrapped page or displays an error if access token is not retrieved.
+    """
     code = request.GET.get('code')
     if code:
         # Attempt to get the access token
@@ -660,6 +1115,15 @@ def spotify_callback(request):
 
 
 def get_access_token(code):
+    """
+    Exchange the authorization code for an access token from Spotify's API.
+
+    Args:
+        code (str): The authorization code received from Spotify.
+
+    Returns:
+        str or None: The access token if successful, or None if an error occurs.
+    """
     token_url = "https://accounts.spotify.com/api/token"
     payload = {
         "grant_type": "authorization_code",

@@ -1,26 +1,26 @@
 """
 URL configuration for SpotfyWrapped project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+This file contains URL patterns to route incoming HTTP requests to appropriate views.
 """
+
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import path, include
 from spotifywrapped.views import spotify_callback
 
 def redirect_to_spotifywrapped(request):
+    """
+    Redirect the root URL ('/') to the 'spotifywrapped/' URL.
+
+    Args:
+        request: HttpRequest object.
+
+    Returns:
+        HttpResponseRedirect: A redirect to the '/spotifywrapped/' URL.
+    """
     return redirect('/spotifywrapped/')
+
 urlpatterns = [
     path("spotifywrapped/", include("spotifywrapped.urls")),
     path('', include('django.contrib.auth.urls')),
