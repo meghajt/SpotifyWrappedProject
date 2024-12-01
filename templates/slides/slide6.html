@@ -1,6 +1,11 @@
 <div id="app5"></div>
 
 <script>
+    /**
+     * Updates the content of the app based on the window's width.
+     * If the width is less than 800px, it displays a mobile version with a smaller layout.
+     * Otherwise, it shows a larger layout with more spacious content.
+     */
     if (window.innerWidth < 800) {
         document.getElementById('app5').innerHTML = `
             <div class="slide" style="background: linear-gradient(135deg, #2af598, #009efd); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.1);">

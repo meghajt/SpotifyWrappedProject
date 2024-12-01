@@ -1,7 +1,11 @@
 <div id="app"></div>
 
 <script>
-    // Variable to track the currently playing track URL
+    /**
+     * Renders the content of the page based on the window width.
+     * If the window width is less than 800px, a mobile-friendly version of the content is displayed.
+     * Otherwise, a desktop-friendly version is shown.
+     */
     let currentTrack = null;
 
     if (window.innerWidth < 800) {
@@ -113,7 +117,11 @@
                 <audio id="previewAudio" style="display: none;"></audio>
             </div>`;
     }
-
+    
+    /**
+     * Plays a preview of the track when hovering over a track element.
+     * @param {string} url - The URL of the track preview to play.
+     */
     window.playPreview = (url) => {
         const audio = document.getElementById('previewAudio');
         if (currentTrack !== url) {
@@ -123,7 +131,10 @@
             audio.play();
         }
     };
-
+    
+    /**
+     * Stops the preview audio when the mouse leaves the track element.
+     */
     window.stopPreview = () => {
         const audio = document.getElementById('previewAudio');
         audio.pause();
