@@ -1,6 +1,19 @@
 <div id="app6"></div>
 
 <script>
+    /**
+     * Dynamically generates and inserts HTML content into the 'app6' div based on the screen width.
+     * This function displays information about the most popular artist and song.
+     * It adjusts the layout and styling based on the window width (less than 800px or 800px and above).
+     * 
+     * On smaller screens (less than 800px), the content is displayed with smaller font sizes
+     * and less spacing between elements.
+     * On larger screens (800px and above), the content is displayed with larger font sizes
+     * and more spacing between elements to improve readability and presentation.
+     * 
+     * The data displayed (artist name, genre, image, song name, and artist) is sourced from the 
+     * `slide` object passed into the HTML template.
+     */
     if (window.innerWidth < 800) {
         document.getElementById('app6').innerHTML = `
             <div class="slide" style="background: linear-gradient(135deg, #d4fc79, #96e6a1); color: #333333; padding: 40px 20px; font-family: 'Poppins', sans-serif; box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.1);">

@@ -97,7 +97,10 @@
             </div>`;
     }
 
-    // Show the artist count when the mouse is over the bar container
+    /**
+     * Displays the number of artists inside the bar when the mouse hovers over the bar container.
+     * @param {HTMLElement} container - The container element of the bar chart.
+     */
     function showArtistCount(container) {
         const artistCount = container.querySelector('.artist-count');
         if (artistCount) {
@@ -105,7 +108,10 @@
         }
     }
 
-    // Hide the artist count when the mouse leaves the bar container
+    /**
+     * Hides the number of artists inside the bar when the mouse leaves the bar container.
+     * @param {HTMLElement} container - The container element of the bar chart.
+     */
     function hideArtistCount(container) {
         const artistCount = container.querySelector('.artist-count');
         if (artistCount) {
