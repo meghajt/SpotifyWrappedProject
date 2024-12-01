@@ -118,16 +118,33 @@
 <div class="container">
     <h1>Welcome to Your Spotify Wrapped!</h1>    
     <div class="card-container">
-        <a href="{% url 'spotify_wrapped' %}" class="card">
+        <!-- Card with dropdown -->
+        <div class="card">
             <h3>View Your Spotify Wrapped</h3>
             <p>Check out your personalized year-in-music experience with detailed insights and stats.</p>
-        </a>
-        
+            <!-- Dropdown and button inside the card -->
+            <form method="GET" action="{% url 'spotify_wrapped' %}" style="margin-top: 15px;">
+                <label for="time_range" style="font-size: 1rem; color: #b3b3b3; display: block; margin-bottom: 5px;">
+                    Select Time Range:
+                </label>
+                <select name="time_range" id="time_range" style="padding: 8px; font-size: 1rem; border-radius: 5px; border: none; background: #333; color: #fff; width: 100%; margin-bottom: 10px;">
+                    <option value="short_term">Short Term</option>
+                    <option value="medium_term" selected>Medium Term</option>
+                    <option value="long_term">Long Term</option>
+                </select>
+                <button type="submit" style="padding: 10px; font-size: 1rem; border-radius: 5px; background: #1db954; color: #fff; border: none; cursor: pointer; width: 100%;">
+                    Generate Wrapped
+                </button>
+            </form>
+        </div>
+
+        <!-- Other card -->
         <a href="{% url 'view_saved_wraps' %}" class="card">
             <h3>View Your Saved Wraps</h3>
             <p>Review and manage your previously saved Wrapped experiences.</p>
         </a>    
     </div>
 </div>
+
 
 {% endblock %}

@@ -11,10 +11,12 @@
             {% for wrap in saved_wraps %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <!-- Link to View the Wrap -->
-                    <a href="{% url 'display_selected_wrap' wrap.id %}">
-                        {{ wrap.created_at|date:"F j, Y, g:i a" }}
-                    </a>
-
+                    <div>
+                        <a href="{% url 'display_selected_wrap' wrap.id %}">
+                            {{ wrap.created_at|date:"F j, Y, g:i a" }}, {{ wrap.time_range|capfirst }}
+                        </a>
+                    </div>
+        
                     <!-- Form to Delete the Wrap -->
                     <form action="{% url 'delete_saved_wrap' wrap.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this wrap?');">
                         {% csrf_token %}

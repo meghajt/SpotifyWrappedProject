@@ -95,8 +95,8 @@ def normalize_genre(genre):
     else:
         return " ".join(word.capitalize() for word in genre.split())
 
-def top_genres(access_token):
-    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
+def top_genres(access_token, time_range):
+    top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=50&time_range={time_range}"
     headers = {"Authorization": f"Bearer {access_token}"}
 
     response = requests.get(top_artists_url, headers=headers)
@@ -123,11 +123,11 @@ def top_genres(access_token):
 
     return top_genres
 
-def get_least_popular(access_token):
+def get_least_popular(access_token, time_range):
     headers = {"Authorization": f"Bearer {access_token}"}
 
     # Fetch top tracks
-    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    top_tracks_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
     track_response = requests.get(top_tracks_url, headers=headers)
     least_popular_song = None
 
@@ -150,7 +150,7 @@ def get_least_popular(access_token):
                 }
 
     # Fetch top artists
-    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
+    top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=50&time_range={time_range}"
     artist_response = requests.get(top_artists_url, headers=headers)
     least_popular_artist = None
 
@@ -173,11 +173,11 @@ def get_least_popular(access_token):
 
     return least_popular_song, least_popular_artist
 
-def get_most_popular(access_token):
+def get_most_popular(access_token, time_range):
     headers = {"Authorization": f"Bearer {access_token}"}
 
     # Fetch top tracks
-    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    top_tracks_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
     track_response = requests.get(top_tracks_url, headers=headers)
     most_popular_song = None
 
@@ -200,7 +200,7 @@ def get_most_popular(access_token):
                 }
 
     # Fetch top artists
-    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term"
+    top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=50&time_range={time_range}"
     artist_response = requests.get(top_artists_url, headers=headers)
     most_popular_artist = None
 
@@ -249,10 +249,11 @@ def validate_song_guess(request):
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 def new_song_question(request):
+    time_range = request.GET.get('time_range', 'medium_term')
     access_token = request.session.get('spotify_access_token')
     headers = {"Authorization": f"Bearer {access_token}"}
     tracks_game_other = []
-    tracks_game_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    tracks_game_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
     tracks_game_response = requests.get(tracks_game_url, headers=headers)
     if tracks_game_response.status_code == 200:
         tracks_game_data = tracks_game_response.json().get("items", [])
@@ -279,6 +280,7 @@ def new_song_question(request):
 
 @login_required
 def spotify_wrapped(request):
+    time_range = request.GET.get('time_range', 'medium_term')
     # Fetch top track
     access_token = request.session.get('spotify_access_token')
     if not access_token:
@@ -289,7 +291,7 @@ def spotify_wrapped(request):
 
     # Fetch top track
     top_tracks = []
-    top_tracks_url = "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=medium_term"
+    top_tracks_url = f"https://api.spotify.com/v1/me/top/tracks?limit=10&time_range={time_range}"
     track_response = requests.get(top_tracks_url, headers=headers)
     if track_response.status_code == 200:
         track_data = track_response.json().get("items", [])
@@ -304,7 +306,7 @@ def spotify_wrapped(request):
         messages.error(request, "Failed to fetch top tracks.")
 
     tracks_game = []
-    tracks_game_url = "https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=medium_term"
+    tracks_game_url = f"https://api.spotify.com/v1/me/top/tracks?limit=50&time_range={time_range}"
     tracks_game_response = requests.get(tracks_game_url, headers=headers)
     if tracks_game_response.status_code == 200:
         tracks_game_data = tracks_game_response.json().get("items", [])
@@ -318,7 +320,7 @@ def spotify_wrapped(request):
         messages.error(request, "Failed to fetch top tracks.")
 
     top_artists = []
-    top_artists_url = "https://api.spotify.com/v1/me/top/artists?limit=10&time_range=medium_term"
+    top_artists_url = f"https://api.spotify.com/v1/me/top/artists?limit=10&time_range={time_range}"
     artist_response = requests.get(top_artists_url, headers=headers)
     if artist_response.status_code == 200:
         artist_data = artist_response.json().get("items", [])
@@ -331,10 +333,10 @@ def spotify_wrapped(request):
     else:
         messages.error(request, "Failed to fetch top tracks.")
 
-    genres = top_genres(access_token)
+    genres = top_genres(access_token, time_range)
 
-    least_popular_song, least_popular_artist = get_least_popular(access_token)
-    most_popular_song, most_popular_artist = get_most_popular(access_token)
+    least_popular_song, least_popular_artist = get_least_popular(access_token, time_range)
+    most_popular_song, most_popular_artist = get_most_popular(access_token, time_range)
 
     # Generate slides
     slides = generate_wrapped_slides(
@@ -364,7 +366,8 @@ def spotify_wrapped(request):
     }
     SpotifyWrap.objects.create(
         user=request.user,
-        wrap_data=wrap_data  # Save all the wrap data as a dictionary
+        wrap_data=wrap_data,  # Save all the wrap data as a dictionary
+        time_range = time_range
     )
 
     # Render the wrapped page with dynamic slides
