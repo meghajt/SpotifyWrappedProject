@@ -200,16 +200,22 @@
         const nav = document.querySelector('nav');
         const label = document.getElementById('darkModeLabel');
         const brand = document.querySelector('.navbar-brand');
-
-        // Load dark mode state from localStorage
+    
+        /**
+         * Loads the dark mode state from localStorage and applies it if enabled.
+         * Checks if dark mode was previously enabled by the user and applies the necessary styles.
+         */
         const loadDarkModeState = () => {
             const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
             if (darkModeEnabled) {
                 enableDarkMode();
             }
         };
-
-        // Enable dark mode
+    
+        /**
+         * Enables dark mode by adding the appropriate classes to the body, navigation, label, and brand elements.
+         * This visually applies the dark mode theme to the page.
+         */
         const enableDarkMode = () => {
             body.classList.add('dark-mode');
             nav.classList.add('dark-mode');
@@ -217,8 +223,11 @@
             label.classList.remove('light-mode');
             brand.classList.add('dark-mode');
         };
-
-        // Disable dark mode
+    
+        /**
+         * Disables dark mode by removing the dark mode classes from the body, navigation, label, and brand elements.
+         * This restores the light mode theme to the page.
+         */
         const disableDarkMode = () => {
             body.classList.remove('dark-mode');
             nav.classList.remove('dark-mode');
@@ -226,13 +235,20 @@
             label.classList.add('light-mode');
             brand.classList.remove('dark-mode');
         };
-
-        // Save dark mode state to localStorage
+    
+        /**
+         * Saves the dark mode state to localStorage.
+         * @param {boolean} isEnabled - A boolean indicating whether dark mode is enabled or not.
+         */
         const saveDarkModeState = (isEnabled) => {
             localStorage.setItem('darkMode', isEnabled);
         };
-
-        // Toggle dark mode
+    
+        /**
+         * Toggles the dark mode on and off.
+         * Adds or removes the dark mode classes from the body, navigation, label, and brand elements.
+         * Saves the current dark mode state to localStorage.
+         */
         const toggleDarkMode = () => {
             const isDarkMode = body.classList.toggle('dark-mode');
             nav.classList.toggle('dark-mode');
@@ -241,11 +257,13 @@
             brand.classList.toggle('dark-mode');
             saveDarkModeState(isDarkMode);
         };
-
+    
+        // Event listener to toggle dark mode when the toggle button is clicked
         darkModeToggle.addEventListener('click', toggleDarkMode);
-
-        // Initialize on page load
+    
+        // Initialize dark mode state on page load
         loadDarkModeState();
     </script>
+
 </body>
 </html>

@@ -204,7 +204,7 @@
         const slides = document.querySelectorAll('.slide');
         const navbar = document.getElementById('navbar');
         const hoverArea = document.getElementById('hover-area');
-
+    
         // List of transition effects
         const transitionClasses = [
             'fade',
@@ -215,55 +215,84 @@
             'flip-horizontal',
             'flip-vertical'
         ];
-
+    
+        /**
+         * Applies a random transition effect to the given slide.
+         * The transition effect is selected randomly from the available list of transitions.
+         * 
+         * @param {HTMLElement} slide - The slide element to which the transition effect will be applied.
+         */
         function applyRandomTransition(slide) {
             // Remove all transition classes
             slide.classList.remove(...transitionClasses);
-
+    
             // Add a random transition class
             const randomClass = transitionClasses[Math.floor(Math.random() * transitionClasses.length)];
             slide.classList.add(randomClass);
         }
-
+    
+        /**
+         * Displays the slide at the given index, applying a random transition effect.
+         * All slides are reset first, and the targeted slide is then activated with a transition.
+         * 
+         * @param {number} index - The index of the slide to be displayed.
+         */
         function showSlide(index) {
             // Reset all slides
             slides.forEach(slide => {
                 slide.style.opacity = '0';
                 slide.classList.remove('active', ...transitionClasses);
             });
-
+    
             // Update current slide index
             currentSlide = (index + slides.length) % slides.length;
-
+    
             // Activate the target slide
             const nextSlide = slides[currentSlide];
             nextSlide.style.opacity = '1';
             nextSlide.classList.add('active');
-
+    
             // Apply a random transition
             applyRandomTransition(nextSlide);
         }
-
+    
+        /**
+         * Displays the next slide in the sequence.
+         * This function increments the current slide index and displays the next slide.
+         */
         function nextSlide() {
             showSlide(currentSlide + 1);
         }
-
+    
+        /**
+         * Displays the previous slide in the sequence.
+         * This function decrements the current slide index and displays the previous slide.
+         */
         function prevSlide() {
             showSlide(currentSlide - 1);
         }
-
+    
         // Initialize the first slide
         slides[currentSlide].classList.add('active');
         applyRandomTransition(slides[currentSlide]);
-
+    
         // Navbar hover functionality
+        /**
+         * Shows the navbar when the hover area is hovered over.
+         * It makes the navbar visible when the mouse enters the hover area.
+         */
         hoverArea.addEventListener('mouseenter', () => {
             navbar.classList.add('visible');
         });
-
+    
+        /**
+         * Hides the navbar when the mouse leaves the navbar area.
+         * It removes the visible class, making the navbar hidden again.
+         */
         navbar.addEventListener('mouseleave', () => {
             navbar.classList.remove('visible');
         });
     </script>
+
 </body>
 </html>
