@@ -20,17 +20,15 @@
         nav {
             background-color: #ffffff;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, color 0.3s;
         }
 
         nav .navbar-brand {
             font-weight: bold;
             color: #007bff;
-            transition: color 0.3s;
         }
 
-        nav .navbar-brand.dark-mode {
-            color: #1DB954;
+        nav .navbar-brand:hover {
+            color: #0056b3;
         }
 
         nav .dropdown-menu {
@@ -57,22 +55,7 @@
             margin: auto;
             padding: 2rem;
         }
-
-        /* Dark Mode Styles */
-        body.dark-mode {
-            background-color: #121212;
-            color: #1DB954;
-        }
-
-        nav.dark-mode {
-            background-color: #1c1c1c;
-        }
-
-        nav .dropdown-menu.dark-mode {
-            background-color: #2c2c2c;
-        }
-
-        /* Settings Button */
+        
         .btn-settings {
             background-color: #1db954;
             color: white;
@@ -103,72 +86,13 @@
                 display: none;
             }
         }
-
-        /* Dark Mode Toggle Switch */
-        .dark-mode-toggle-container {
-            display: flex;
-            align-items: center;
-            margin-right: 1rem;
-        }
-
-        .dark-mode-toggle-label {
-            margin-right: 0.5rem;
-            font-size: 1rem;
-            transition: color 0.3s;
-        }
-
-        .dark-mode .dark-mode-toggle-label {
-            color: #1DB954;
-        }
-
-        .dark-mode-toggle-label.light-mode {
-            color: #000000;
-        }
-
-        .dark-mode-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 40px;
-            height: 20px;
-            background-color: #ccc;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .dark-mode-toggle::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .dark-mode .dark-mode-toggle {
-            background-color: #1DB954;
-        }
-
-        .dark-mode .dark-mode-toggle::after {
-            transform: translateX(20px);
-        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid d-flex align-items-center">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}">Spotify Wrapped</a>
             <div class="ms-auto d-flex align-items-center">
-                <!-- Dark Mode Toggle -->
-                <div class="dark-mode-toggle-container">
-                    <span id="darkModeLabel" class="dark-mode-toggle-label">Dark Mode</span>
-                    <div id="darkModeToggle" class="dark-mode-toggle"></div>
-                </div>
                 <div class="dropdown">
                     <button class="btn btn-settings dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Settings
@@ -193,77 +117,5 @@
         {% block content %}
         {% endblock %}
     </div>
-
-    <script>
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const body = document.body;
-        const nav = document.querySelector('nav');
-        const label = document.getElementById('darkModeLabel');
-        const brand = document.querySelector('.navbar-brand');
-    
-        /**
-         * Loads the dark mode state from localStorage and applies it if enabled.
-         * Checks if dark mode was previously enabled by the user and applies the necessary styles.
-         */
-        const loadDarkModeState = () => {
-            const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-            if (darkModeEnabled) {
-                enableDarkMode();
-            }
-        };
-    
-        /**
-         * Enables dark mode by adding the appropriate classes to the body, navigation, label, and brand elements.
-         * This visually applies the dark mode theme to the page.
-         */
-        const enableDarkMode = () => {
-            body.classList.add('dark-mode');
-            nav.classList.add('dark-mode');
-            label.classList.add('dark-mode');
-            label.classList.remove('light-mode');
-            brand.classList.add('dark-mode');
-        };
-    
-        /**
-         * Disables dark mode by removing the dark mode classes from the body, navigation, label, and brand elements.
-         * This restores the light mode theme to the page.
-         */
-        const disableDarkMode = () => {
-            body.classList.remove('dark-mode');
-            nav.classList.remove('dark-mode');
-            label.classList.remove('dark-mode');
-            label.classList.add('light-mode');
-            brand.classList.remove('dark-mode');
-        };
-    
-        /**
-         * Saves the dark mode state to localStorage.
-         * @param {boolean} isEnabled - A boolean indicating whether dark mode is enabled or not.
-         */
-        const saveDarkModeState = (isEnabled) => {
-            localStorage.setItem('darkMode', isEnabled);
-        };
-    
-        /**
-         * Toggles the dark mode on and off.
-         * Adds or removes the dark mode classes from the body, navigation, label, and brand elements.
-         * Saves the current dark mode state to localStorage.
-         */
-        const toggleDarkMode = () => {
-            const isDarkMode = body.classList.toggle('dark-mode');
-            nav.classList.toggle('dark-mode');
-            label.classList.toggle('dark-mode');
-            label.classList.toggle('light-mode');
-            brand.classList.toggle('dark-mode');
-            saveDarkModeState(isDarkMode);
-        };
-    
-        // Event listener to toggle dark mode when the toggle button is clicked
-        darkModeToggle.addEventListener('click', toggleDarkMode);
-    
-        // Initialize dark mode state on page load
-        loadDarkModeState();
-    </script>
-
 </body>
 </html>
