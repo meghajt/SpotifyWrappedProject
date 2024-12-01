@@ -114,10 +114,6 @@
             </div>`;
     }
 
-    /**
-     * Plays a preview of the track when hovering over a track element.
-     * @param {string} url - The URL of the track preview to play.
-     */
     window.playPreview = (url) => {
         const audio = document.getElementById('previewAudio');
         if (currentTrack !== url) {
@@ -128,9 +124,6 @@
         }
     };
 
-    /**
-     * Stops the preview audio when the mouse leaves the track element.
-     */
     window.stopPreview = () => {
         const audio = document.getElementById('previewAudio');
         audio.pause();

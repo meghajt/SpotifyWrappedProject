@@ -1,16 +1,6 @@
 <div id="trackScrambleApp"></div>
 
 <script>
-    /**
-     * Dynamically generates the HTML structure for the Track Scramble Game based on the screen width.
-     * Adjusts layout for mobile (less than 800px) and desktop (800px or greater) views.
-     * 
-     * On mobile screens, the layout features smaller images, buttons, and text.
-     * On desktop screens, the layout includes larger elements for better visibility and interaction.
-     * 
-     * The game asks the user to unscramble a song's name, displays the scrambled name, and provides options
-     * to check the answer, give up, or move on to a new question.
-     */
     if (window.innerWidth < 800) {
         // Mobile Layout
         document.getElementById('trackScrambleApp').innerHTML = `
@@ -97,12 +87,7 @@
             </div>`;
     }
 
-    /**
-     * Event listener for DOM content loaded, initializing the game functionality:
-     * 1. Handles the check answer, give up, and new question buttons.
-     * 2. Sends AJAX requests to validate the user's guess and fetch a new question.
-     * 3. Displays result messages based on the user's actions.
-     */
+    // Functionality remains the same for both layouts
     document.addEventListener("DOMContentLoaded", function () {
         const checkAnswerButton = document.getElementById("checkAnswer");
         const giveUpButton = document.getElementById("giveUp");
@@ -115,10 +100,6 @@
 
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        /**
-         * Validates the user's guess by sending it to the server.
-         * Displays success or failure message based on server response.
-         */
         checkAnswerButton.addEventListener("click", function () {
             const userGuess = userGuessInput.value.trim();
             const correctName = correctNameElement.textContent;
@@ -145,20 +126,12 @@
                 });
         });
 
-        /**
-         * Reveals the correct answer when the "Give Up" button is clicked.
-         * Displays the correct song name in a warning message.
-         */
         giveUpButton.addEventListener("click", function () {
             const correctName = correctNameElement.textContent;
             resultMessage.style.display = "block";
             resultMessage.innerHTML = `<p class='text-warning' style='font-weight: bold;'>The correct answer was: <span class='text-info'>${correctName}</span></p>`;
         });
 
-        /**
-         * Fetches a new question from the server when the "New Question" button is clicked.
-         * Updates the game with a new album cover, scrambled name, and correct name.
-         */
         newQuestionButton.addEventListener("click", function () {
             fetch("{% url 'new_song_question' %}")
                 .then(response => response.json())
