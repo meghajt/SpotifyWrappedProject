@@ -83,9 +83,17 @@
         /* Mobile-first responsiveness */
 /* Card styling for smaller screens */
         @media (max-width: 600px) {
+            html, body {
+                overflow: hidden;
+            }
+            .container {
+                padding-top: 7.5px; /* Further reduced padding for mobile */
+            }
+            
             .card-container {
                 grid-template-columns: repeat(2, 1fr); /* Two cards per row on smaller screens */
                 gap: 10px; /* Reduce gap for tighter layout */
+                margin-top: 10px;
             }
         
             .card {
