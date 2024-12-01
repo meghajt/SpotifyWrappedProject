@@ -493,6 +493,18 @@ def display_selected_wrap(request, wrap_id):
 
 
 @login_required
+def delete_saved_wrap(request, wrap_id):
+    """Delete a saved Spotify wrap."""
+    try:
+        saved_wrap = SpotifyWrap.objects.get(id=wrap_id, user=request.user)
+        saved_wrap.delete()
+        messages.success(request, "The wrap has been successfully deleted.")
+    except SpotifyWrap.DoesNotExist:
+        messages.error(request, "The wrap does not exist or you do not have permission to delete it.")
+
+    return redirect('view_saved_wraps')
+
+@login_required
 def invite_duo_wrapped(request):
     """Invite a friend to join a Duo Wrapped."""
     if request.method == 'POST':

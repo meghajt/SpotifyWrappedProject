@@ -22,4 +22,6 @@ urlpatterns = [
     path('duo-wrapped/<int:duo_id>/', view_duo_wrapped, name='view_duo_wrapped'),
     path('validate_song_guess/', views.validate_song_guess, name='validate_song_guess'),
     path('new_song_question/', views.new_song_question, name='new_song_question'),
+    path('delete-wrap/<int:wrap_id>/', views.delete_saved_wrap, name='delete_saved_wrap'),
+
 ]
